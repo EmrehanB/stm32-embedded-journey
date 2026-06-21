@@ -34,6 +34,8 @@ Confirms the software model matches the hardware state at every stage.
 
 ## Türkçe
 
-STM32F407G-DISC1 üzerindeki **mavi LED'i (LD6, PD15)** HAL kullanmadan, register seviyesinde yakma alıştırması. Tamamen bağımsız yapıldı — pini bulma, tüm register adreslerini çıkarma ve her adımı debugger'da doğrulama dahil.
+STM32F407G-DISC1 kartındaki mavi LED'i (LD6, PD15) HAL kullanmadan, register seviyesinde yaktım. Alıştırmayı baştan sona kendim yaptım: pini şematikten buldum, tüm register adreslerini kendim çıkardım ve her adımı debugger'da doğruladım.
 
-**Adımlar:** Şematikten pini bul (PD15) -> GPIOD base adresi (`0x40020C00`) -> AHB1 bus'ı için `RCC_AHB1ENR` bit 3 ile clock ver -> `GPIOx_MODER` bit 30-31'i `01` (çıkış) yap -> `GPIOx_ODR` bit 15'i `1` yaparak LED'i yak. Her adım debugger'da register değerleri izlenerek doğrulandı.
+Adımlar: Şematikten pini buldum (PD15). GPIOD'nin base adresini reference manual'dan aldım (0x40020C00). GPIOD, AHB1 bus'ına bağlı olduğu için RCC_AHB1ENR register'ında 3. biti set ederek clock verdim. GPIOx_MODER'da PD15'e karşılık gelen 30-31. bitleri 01 yaparak pini çıkışa aldım (diğer bitleri bozmamak için önce temizleyip sonra set ettim). Son olarak GPIOx_ODR'da 15. biti 1 yaparak pini 3.3 V'a çektim ve LED yandı.
+
+Her adımı debugger'da tek tek ilerleyerek, register değerlerinin canlı değişimini izleyerek doğruladım — yalnızca LED'in yanmasına değil, donanımın her aşamadaki gerçek durumuna bakarak.

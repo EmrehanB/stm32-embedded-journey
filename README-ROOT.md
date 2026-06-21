@@ -17,4 +17,4 @@ Each exercise lives in its own folder with a dedicated README explaining the app
 
 ## Türkçe
 
-STM32 üzerinde HAL kullanmadan, register seviyesinde bare-metal embedded C alıştırmaları. Çevre birimi register'larına doğrudan bellek adresleri üzerinden erişiliyor. Her alıştırma kendi klasöründe, kendi README'siyle birlikte yer alır.
+STM32 üzerinde, HAL kullanmadan register seviyesinde yazılmış bare-metal embedded C alıştırmaları. Çevre birimlerinin register'larına doğrudan bellek adresleriyle erişiyorum. Her alıştırmanın kendi klasörü ve o alıştırmayı anlatan ayrı bir README'si var.
