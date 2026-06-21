@@ -12,6 +12,7 @@ Each exercise lives in its own folder with a dedicated README explaining the app
 |---|----------|-------|---------|
 | 01 | LED on — PD12 | GPIO output, bare-metal | [01-led-pd12](./01-led-pd12) |
 | 02 | LED on — PD15 | GPIO output, register tracing | [02-led6-pd15](./02-led6-pd15) |
+| 03 | LED on — PD12 (bitwise) | Bit set/clear with shift operators | [03-bitwise-shift-led](./03-bitwise-shift-led) |
 
 ---
 
