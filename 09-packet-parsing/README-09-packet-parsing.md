@@ -38,6 +38,26 @@ This shift-and-mask idiom is the same one used throughout the register exercises
 
 Each extracted field is stored in a `struct Packet` member sized to fit (`uint8_t` for small fields, `uint16_t` for the 12-bit payload). The struct groups the decoded fields into one named record.
 
+## Alternative: bit-fields (and why not used here)
+
+C also allows the struct itself to declare bit widths, so each member occupies exactly its number of bits:
+
+```c
+struct Packet {
+    uint32_t crc:2;
+    uint32_t status:1;
+    uint32_t payload:12;
+    uint32_t bat:3;
+    // ...
+};
+```
+
+This looks cleaner — the widths are stated once in the type, and no manual shifting seems necessary.
+
+**But this project deliberately uses explicit shift-and-mask instead**, for one reason: **bit-field ordering is compiler-dependent.** The C standard does not guarantee whether `crc:2` lands in the lowest bits or the highest bits of the word, and it can differ between compilers or platforms. That makes bit-fields unreliable for representing a real hardware register or a communication packet, where the bit positions are fixed by the hardware or protocol — the compiler's layout may not match what the device expects.
+
+Explicit shift-and-mask, by contrast, places every field at a bit position **you** control, identically on every compiler. This is why professional embedded code generally uses shift-and-mask for register and protocol access, and treats bit-fields as convenient but non-portable. (Same family of "compiler-dependent behavior" as struct padding and packing.)
+
 ## Why this matters
 
 Decoding a packed value into fields is exactly what happens when reading a status register, parsing a protocol frame (CAN, sensor data), or unpacking a communication packet. Getting the shift and mask right for every field — with no off-by-one bit errors — is the actual skill; a single wrong shift corrupts every field after it.
@@ -50,8 +70,10 @@ Ham bir **32-bit paket değerini** alıp, **kaydır-maskele (shift-and-mask)** b
 
 Bu, temel bir embedded işi: ham veri bir sensörden, register'dan veya haberleşme hattından tek bir değer olarak gelir ve tek tek alanların bit bit çıkarılması gerekir.
 
-**Paket düzeni:** 32 bit, 8 alana bölünmüş (crc 2 bit, status 1 bit, payload 12 bit, bat 3 bit, sensor 3 bit, longAddr 8 bit, shortAddr 2 bit, addrMode 1 bit). Toplam tam 32 bit, boşluk yok.
+**Paket düzeni:** 32 bit, 8 alana bölünmüş (crc 2, status 1, payload 12, bat 3, sensor 3, longAddr 8, shortAddr 2, addrMode 1 bit). Toplam tam 32 bit, boşluk yok.
 
-**Çıkarma kalıbı:** Her alan aynı yöntemle ayıklanıyor — önce alanı bit 0'a indir (`>>`), sonra sadece kendi genişliği kadar maskele (`&`). Örneğin `(packetValue >> 3) & 0xFFF`: payload'ı 3 bit aşağı kaydırıp en alttaki 12 biti tutuyor. Bu kaydır-maskele kalıbı, register alıştırmalarında (01-07) kullandığımın aynısı — buradaki fark, onu bütün bir yapılandırılmış paketi çözmek için sistematik uygulamak.
+**Çıkarma kalıbı:** Her alan aynı yöntemle ayıklanıyor — önce alanı bit 0'a indir (`>>`), sonra sadece kendi genişliği kadar maskele (`&`). Örneğin `(packetValue >> 3) & 0xFFF`: payload'ı 3 bit aşağı kaydırıp en alttaki 12 biti tutuyor. Bu kalıp, register alıştırmalarında (01-07) kullandığımın aynısı — buradaki fark, onu bütün bir paketi çözmek için sistematik uygulamak.
 
-**Neden önemli:** Paketlenmiş bir değeri alanlara çözmek, tam olarak bir status register'ı okurken, bir protokol çerçevesini (CAN, sensör verisi) ayrıştırırken veya bir haberleşme paketini açarken yapılan şey. Her alan için doğru kaydırma ve maskeyi bulmak — tek bir bitlik kayma olmadan — asıl beceri; bir yanlış kaydırma, sonraki tüm alanları bozar.
+**Alternatif: bit-field'lar:** C, struct'ın kendisinde bit genişliği belirtmeye izin verir (`uint32_t crc:2;`), böylece her üye tam olarak kendi bit sayısı kadar yer kaplar. Daha temiz görünür. 
+
+**Neden önemli:** Paketlenmiş bir değeri alanlara çözmek, tam olarak bir status register'ı okurken, bir protokol çerçevesini (CAN, sensör verisi) ayrıştırırken veya bir haberleşme paketini açarken yapılan şey. Her alan için doğru kaydırma ve maskeyi bulmak — tek bir bitlik kayma olmadan — asıl beceri; bir yanlış kaydırma sonraki tüm alanları bozar.
