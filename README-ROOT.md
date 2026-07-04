@@ -17,6 +17,7 @@ Each exercise lives in its own folder with a dedicated README explaining the app
 | 05 | Input-controlled LED | GPIO input (PA0) drives output (PD12) | [05-input-controlled-led](./05-input-controlled-led) |
 | 06 | Volatile pin read | O2-safe input using `volatile` | [06-volatile-pin-read](./06-volatile-pin-read) |
 | 07 | const + volatile registers | Correct qualifiers for input vs output registers | [07-const-volatile-pin-read](./07-const-volatile-pin-read) |
+| 08 | Struct padding | Data alignment & padding, shown byte by byte | [08-padding-test](./08-padding-test) |
 
 ---
 
