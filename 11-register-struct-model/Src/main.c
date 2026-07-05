@@ -1,52 +1,42 @@
 
+
 #include <stdint.h>
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 #endif
 
+
+
+#include "main.h"
+
 int main(void)
+
 {
 
-	    uint32_t volatile *pClckCtrlReg=(uint32_t*) 0x40023830;
-		uint32_t volatile *pPortDModeReg=(uint32_t*) 0x40020C00;
-		uint32_t volatile *pPortDOutReg=(uint32_t*) 0x40020C14;
+	volatile RCC_AHB1ENR_t *pRCCenableReg=(RCC_AHB1ENR_t*) 0x40023830;
+	volatile GPIOx_MODE_t *pPortD_ModerReg= (GPIOx_MODE_t *) 0x40020C00;
+	volatile GPIOx_ODR_t *pPortD_ODRreg=( GPIOx_ODR_t *) 0x40020C14;
 
 
 
-	    *pClckCtrlReg=*pClckCtrlReg | (1<<3);
-	    *pClckCtrlReg=*pClckCtrlReg | (1<<0); //GPIOA ye clock vermek için
+
+	//LD4 için GPIOD nin 12. pini ile ilgileniyoruz.
 
 
-	    *pPortDModeReg &=~(1<<24);
-	    *pPortDModeReg &=~(1<<25); // Bu iki satır *pPortDModeReg &=~(3<<24); şeklinde tek satırda da yapılabilirdi.
-	    *pPortDModeReg |=(1<<24);
+	pRCCenableReg->gpio_d_en=1;
+	pPortD_ModerReg->pin_12=1;
 
+	while(1){
 
-	    //GPIOA adresi:  0x40020000
+		pPortD_ODRreg->pin_12=1;
 
-	    uint32_t volatile *pPortAModeReg=(uint32_t*) 0x40020000;
-	    uint32_t volatile *pPortAInReg=(uint32_t*) 0x40020010;
+		for(int i=0;i<1000000;i++);
 
-	    //GPIOA yi input moda konfigüre edelim.
-	    *pPortAModeReg&=~(0x03);
+		pPortD_ODRreg->pin_12=0;
 
-        while(1){
+		for(int i=0;i<1000000;i++);
+	}
 
-        	uint8_t pinDurumu = (uint8_t) (*pPortAInReg&0x01);
-
-        	if(pinDurumu){
-
-	    	*pPortDOutReg|= (1<<12);
-        	}
-
-        	else{
-	    	*pPortDOutReg&= ~(1<<12);
-	    	}
-
-
-        }
-
-
-
+	for(;;);
 }
