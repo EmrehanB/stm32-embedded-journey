@@ -20,6 +20,7 @@ Each exercise lives in its own folder with a dedicated README explaining the app
 | 08 | Struct padding | Data alignment & padding, shown byte by byte | [08-padding-test](./08-padding-test) |
 | 09 | Packet bit-field parsing | Decode a 32-bit packet with shift & mask | [09-packet-parsing](./09-packet-parsing) |
 | 10 | Union-based packet parsing | Same packet via union + struct; portability trade-off | [10-union-packet-parsing](./10-union-packet-parsing) |
+| 11 | Register struct model | Registers as bit-field structs in a header, accessed via `->` | [11-register-struct-model](./11-register-struct-model) |
 
 ---
 
