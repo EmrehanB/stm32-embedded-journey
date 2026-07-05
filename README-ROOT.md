@@ -1,6 +1,6 @@
 # Embedded C Exercises
 
-Bare-metal embedded C exercises on STM32, written without HAL — accessing peripheral registers directly through memory addresses.
+Bare-metal embedded C exercises on STM32
 
 **Board:** STM32F407G-DISC1 (Discovery) · **MCU:** STM32F407VGT6 (ARM Cortex-M4) · **Toolchain:** STM32CubeIDE
 
@@ -19,9 +19,10 @@ Each exercise lives in its own folder with a dedicated README explaining the app
 | 07 | const + volatile registers | Correct qualifiers for input vs output registers | [07-const-volatile-pin-read](./07-const-volatile-pin-read) |
 | 08 | Struct padding | Data alignment & padding, shown byte by byte | [08-padding-test](./08-padding-test) |
 | 09 | Packet bit-field parsing | Decode a 32-bit packet with shift & mask | [09-packet-parsing](./09-packet-parsing) |
+| 10 | Union-based packet parsing | Same packet via union + struct; portability trade-off | [10-union-packet-parsing](./10-union-packet-parsing) |
 
 ---
 
 ## Türkçe
 
-STM32 üzerinde, HAL kullanmadan register seviyesinde yazılmış bare-metal embedded C alıştırmaları. Çevre birimlerinin register'larına doğrudan bellek adresleriyle erişiyorum. Her alıştırmanın kendi klasörü ve o alıştırmayı anlatan ayrı bir README'si var.
+STM32 üzerinde bare-metal embedded C alıştırmaları.Her alıştırmanın kendi klasörü ve o alıştırmayı anlatan ayrı bir README'si var.
