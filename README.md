@@ -1,16 +1,16 @@
 # STM32 Embedded Journey
 
-Bare-metal'den ileri seviyeye, STM32 üzerinde embedded sistem programlama yolculuğu.
+Embedded systems programming on STM32, from bare-metal upwards.
 
 **Board:** STM32F407G-DISC1 (Discovery) · **MCU:** STM32F407VGT6 (ARM Cortex-M4) · **Toolchain:** STM32CubeIDE
 
-Her alıştırma kendi klasöründe, o alıştırmayı anlatan ayrı bir README ile birlikte bulunur. Kurslar ilerledikçe repo yeni bölümlerle genişler.
+Each exercise lives in its own folder with a dedicated README explaining the approach. The repo grows with new sections as the courses progress.
 
 ---
 
 ## Course 1 — Bare-metal Embedded C
 
-Register seviyesinde, HAL kullanmadan bare-metal C. GPIO, `volatile`, struct/union, bit-field ve register modelleme.
+Register-level bare-metal C, no HAL. GPIO, `volatile`, structs/unions, bit-fields, and register modeling.
 
 | # | Exercise | Topic | Details |
 |---|----------|-------|---------|
@@ -30,14 +30,14 @@ Register seviyesinde, HAL kullanmadan bare-metal C. GPIO, `volatile`, struct/uni
 
 ## Course 2 — ARM Cortex-M Architecture
 
-Cortex-M3/M4 işlemci mimarisi: çalışma modları, register set, MSP/PSP stack, exception/interrupt yönetimi (NVIC), memory map, bus arayüzleri, bit-banding, bootloader/IAP.
+Cortex-M3/M4 processor internals: operational modes, register set, MSP/PSP banked stack, exception & interrupt handling (NVIC), memory map, bus interfaces, bit-banding, bootloader/IAP.
 
 | # | Exercise | Topic | Details |
 |---|----------|-------|---------|
-| — | _(devam ediyor)_ | | [course-2-cortex-m](./course-2-cortex-m) |
+| — | _(in progress)_ | | [course-2-cortex-m](./course-2-cortex-m) |
 
 ---
 
 ## Türkçe
 
-STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Her alıştırmanın kendi klasörü ve o alıştırmayı anlatan ayrı bir README'si var. Repo iki bölümden oluşuyor: **Course 1** bare-metal embedded C (register seviyesi, HAL'siz), **Course 2** ARM Cortex-M işlemci mimarisi. Kurslar ilerledikçe yeni bölümler eklenecek.
+STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Her alıştırmanın kendi klasörü ve o alıştırmayı anlatan ayrı bir README'si var. Repo iki bölümden oluşuyor: **Course 1** bare-metal embedded C (register seviyesi, HAL'siz), **Course 2** ARM Cortex-M işlemci mimarisi. Kurslar ilerledikçe yeni bölümler eklenir.
