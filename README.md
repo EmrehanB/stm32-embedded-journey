@@ -40,4 +40,4 @@ Cortex-M3/M4 processor internals: operational modes, register set, MSP/PSP banke
 
 ## Türkçe
 
-STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Her alıştırmanın kendi klasörü ve o alıştırmayı anlatan ayrı bir README'si var. Repo iki bölümden oluşuyor: **Course 1** bare-metal embedded C (register seviyesi, HAL'siz), **Course 2** ARM Cortex-M işlemci mimarisi. Kurslar ilerledikçe yeni bölümler eklenir.
+STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Her alıştırmanın kendi klasörü ve o alıştırmayı anlatan ayrı bir README'si var. Repo iki bölümden oluşuyor: **Course 1** bare-metal embedded C (register seviyesi, HAL'siz), **Course 2** ARM Cortex-M işlemci mimarisi. 
