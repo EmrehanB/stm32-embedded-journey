@@ -34,7 +34,7 @@ Cortex-M3/M4 processor internals: operational modes, register set, MSP/PSP banke
 
 | # | Exercise | Topic | Details |
 |---|----------|-------|---------|
-| — | _(in progress)_ | | [course-2-cortex-m](./course-2-cortex-m) |
+| 01 | Inline asm: add in memory | Inline assembly, LDR/STR, load-store architecture | [01-inline-asm-add](./course-2-cortex-m/01-inline-asm-add) |
 
 ---
 
