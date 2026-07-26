@@ -39,6 +39,16 @@ Cortex-M3/M4 processor internals: operational modes, register set, MSP/PSP banke
 
 ---
 
+## Projects
+
+Standalone projects combining skills from completed exercises — not tied to a specific course.
+
+| Project | Description | Details |
+|---|---|---|
+| Reaction Timer | Bare-metal reaction time game: random wait, button input, busy-wait timing | [reaction-timer](./projects/reaction-timer) |
+
+---
+
 ## Türkçe
 
-STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Her alıştırmanın kendi klasörü ve o alıştırmayı anlatan ayrı bir README'si var. Repo iki bölümden oluşuyor: **Course 1** bare-metal embedded C (register seviyesi, HAL'siz), **Course 2** ARM Cortex-M işlemci mimarisi. 
+STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Her alıştırmanın kendi klasörü ve o alıştırmayı anlatan ayrı bir README'si var. Repo üç bölümden oluşuyor: **Course 1** bare-metal embedded C (register seviyesi, HAL'siz), **Course 2** ARM Cortex-M işlemci mimarisi, **Projects** ise kurs alıştırmalarından bağımsız, kazanılan becerileri birleştiren kendi projelerim.
