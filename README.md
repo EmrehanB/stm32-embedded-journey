@@ -39,6 +39,16 @@ Cortex-M3/M4 processor internals: operational modes, register set, MSP/PSP banke
 
 ---
 
+## Driver Development
+
+GPIO, SPI, USART, I2C drivers at the register level, by Erhan Konak on Udemy. Kept outside the `course-N` numbering since it's a separate source, not part of the Fastbit sequence above.
+
+_No exercises yet — this section will grow as they're completed._
+
+Details: [driver-development](./driver-development)
+
+---
+
 ## Projects
 
 Standalone projects combining skills from completed exercises — not tied to a specific course.
@@ -51,4 +61,4 @@ Standalone projects combining skills from completed exercises — not tied to a 
 
 ## Türkçe
 
-STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Her alıştırmanın kendi klasörü ve o alıştırmayı anlatan ayrı bir README'si var. Repo üç bölümden oluşuyor: **Course 1** bare-metal embedded C (register seviyesi, HAL'siz), **Course 2** ARM Cortex-M işlemci mimarisi, **Projects** ise kurs alıştırmalarından bağımsız, kazanılan becerileri birleştiren kendi projelerim.
+STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Repo dört bölümden oluşuyor: **Course 1** bare-metal embedded C (register seviyesi, HAL'siz), **Course 2** ARM Cortex-M işlemci mimarisi, **Driver Development** GPIO/SPI/USART/I2C sürücü geliştirme (Fastbit dizisinden ayrı bir kaynak), **Projects** ise kurs alıştırmalarından bağımsız, kazanılan becerileri birleştiren kendi projelerim.
