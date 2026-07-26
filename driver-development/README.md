@@ -10,4 +10,4 @@ Kept outside the `course-N` numbering used for the Fastbit sequence above, since
 
 ## Türkçe
 
-GPIO, SPI, USART, I2C sürücülerini register seviyesinde (HAL'siz) geliştirmeyi öğrendiğim bir Udemy kursunu takip ettiğim bölüm. Eğitmen **Erhan Konak** — Udemy'den takip ettiğim ve anlatımını çok sevdiğim bir eğitmen. Fastbit dizisinden ayrı bir kaynak olduğu için `course-N` numaralandırmasına dahil edilmedi. Alıştırmalar tamamlandıkça buraya eklenecek.
+GPIO, SPI, USART, I2C sürücülerini register seviyesinde (HAL'siz) geliştirmeyi öğrendiğim bir Udemy kursunu takip ettiğim bölüm. Eğitmen **Erhan Konak** — Udemy'den takip ettiğim ve anlatımını çok sevdiğim bir eğitmen. 
