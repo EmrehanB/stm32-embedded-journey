@@ -43,7 +43,7 @@ Cortex-M3/M4 processor internals: operational modes, register set, MSP/PSP banke
 
 GPIO, SPI, USART, I2C drivers at the register level, by Erhan Konak on Udemy. Kept outside the `course-N` numbering since it's a separate source, not part of the Fastbit sequence above.
 
-_No exercises yet — this section will grow as they're completed._
+Starting point: a device-specific header (`stm32f407xx.h`) with memory and peripheral base addresses. More files will be added as exercises are completed.
 
 Details: [driver-development](./driver-development)
 
