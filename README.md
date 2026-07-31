@@ -56,6 +56,7 @@ Standalone projects combining skills from completed exercises — not tied to a 
 | Project | Description | Details |
 |---|---|---|
 | Reaction Timer | Bare-metal reaction time game: random wait, button input, busy-wait timing | [reaction-timer](./projects/reaction-timer) |
+| GPIOD LED Patterns | Onboard LED (PD12-PD15) blink sequence, written during a power outage | [gpiod-led-patterns](./projects/gpiod-led-patterns) |
 
 ---
 
