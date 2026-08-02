@@ -22,4 +22,4 @@ Uses a local, trimmed-down version of the `GPIO_TypeDef_t` struct (only through 
 
 ## Türkçe
 
-Elektrik/internet kesintisi sırasında can sıkıntısından yazılmış, STM32F407G-DISC1'in kart üstü dört LED'ini (PD12–PD15) register seviyesinde kontrol eden bir blink dizisi. Önce her LED sırayla tek tek yanıp sönüyor, sonra hepsi birlikte 4 tur yanıp sönüyor, döngü baştan başlıyor.
+internet kesintisi sırasında can sıkıntısından yazılmış, STM32F407G-DISC1'in kart üstü dört LED'ini (PD12–PD15) register seviyesinde kontrol eden bir blink dizisi. Önce her LED sırayla tek tek yanıp sönüyor, sonra hepsi birlikte 4 tur yanıp sönüyor, döngü baştan başlıyor.
