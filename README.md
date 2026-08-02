@@ -6,6 +6,8 @@ Embedded systems programming on STM32, from bare-metal upwards.
 
 Each exercise lives in its own folder with a dedicated README explaining the approach. The repo grows with new sections as the courses progress.
 
+See [RESOURCES.md](./RESOURCES.md) for courses, reference documents, and articles used throughout this repo.
+
 ---
 
 ## Course 1 — Bare-metal Embedded C
