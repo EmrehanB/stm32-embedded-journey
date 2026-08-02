@@ -1,0 +1,190 @@
+
+
+#ifndef INC_STM32F407XX_H_
+#define INC_STM32F407XX_H_
+
+#include <stdint.h>
+
+#define __IO volatile
+
+
+/*
+ * Memory Base addrs
+ *
+ */
+
+#define FLASH_BASE_ADDR (0x08000000UL) // Flash Base addr (1 MB )
+#define SRAM1_BASE_ADDR (0x20000000UL) // SRAM1 Base addr (112 KB)
+#define SRAM2_BASE_ADDR (0x2001C000UL) // SRAM2 Base adrr (16 KB)
+//...
+
+
+
+/*
+ * Peripheral Base addrs
+ *
+ */
+
+#define PERIPH_BASE_ADDR (0x40000000UL)                     // Base address for all peripherals
+
+#define APB1_BASE_ADDR  (PERIPH_BASE_ADDR + 0x00000UL)                 // APB1 bus domain base addr
+#define APB2_BASE_ADDR  (PERIPH_BASE_ADDR + 0x10000UL)      // APB2 bus domain base addr  (0x00010000 şeklinde yazmak okunaklılığı arttırır.)
+#define AHB1_BASE_ADDR  (PERIPH_BASE_ADDR + 0x20000UL)      // AHB1 bus domain base addr
+#define AHB2_BASE_ADDR  (PERIPH_BASE_ADDR + 0x10000000UL )  // AHB2 bus domain base addr
+//...
+
+
+
+
+/*
+ * APB1 Peripherals Base Addresses
+ *
+ */
+
+#define TIM2_BASE_ADDR   (APB1_BASE_ADDR + 0x0000UL)                   // Timer 2 base addr
+#define TIM3_BASE_ADDR   (APB1_BASE_ADDR + 0x0400UL)        // Timer 3 base addr
+#define TIM4_BASE_ADDR   (APB1_BASE_ADDR + 0x0800UL)        // Timer 4 base addr
+#define TIM5_BASE_ADDR   (APB1_BASE_ADDR + 0x0C00UL)        // Timer 5 base addr
+#define TIM6_BASE_ADDR   (APB1_BASE_ADDR + 0x1000UL)        // Timer 6 base addr
+#define TIM7_BASE_ADDR   (APB1_BASE_ADDR + 0x1400UL)        // Timer 7 base addr
+// ... (APB1_BASE_ADDR == PERIPH_BASE_ADDR )
+
+#define SPI2_BASE_ADDR   (APB1_BASE_ADDR + 0x3800UL)        // SPI 2 base addr
+#define SPI3_BASE_ADDR   (APB1_BASE_ADDR + 0x3C00UL)        // SPI 3 base addr
+
+#define USART2_BASE_ADDR (APB1_BASE_ADDR + 0x4400UL)        // USART2 base addr
+#define USART3_BASE_ADDR (APB1_BASE_ADDR + 0x4800UL)        // USART3 base addr
+
+#define UART4_BASE_ADDR  (APB1_BASE_ADDR + 0x4C00UL)        // UART4 base addr
+#define UART5_BASE_ADDR  (APB1_BASE_ADDR + 0x5000UL)        // UART5 base addr
+
+#define I2C1_BASE_ADDR   (APB1_BASE_ADDR + 0x5400UL)        //I2C1 base addr
+#define I2C2_BASE_ADDR   (APB1_BASE_ADDR + 0x5800UL)        //I2C2 base addr
+#define I2C3_BASE_ADDR   (APB1_BASE_ADDR + 0x5C00UL)        //I2C3 base addr
+
+
+
+
+/*
+ * APB2 Peripherals Base Addresses
+ *
+ */
+
+#define TIM1_BASE_ADDR   (APB2_BASE_ADDR + 0x0000UL)		//Timer 1 base addr
+#define TIM8_BASE_ADDR   (APB2_BASE_ADDR + 0x0400UL)		//Timer 8 base addr
+
+#define USART1_BASE_ADDR (APB2_BASE_ADDR + 0x1000UL)		//USART 1 base addr
+#define USART6_BASE_ADDR (APB2_BASE_ADDR + 0x1400UL)		//USART 6 base addr
+
+#define SPI1_BASE_ADDR   (APB2_BASE_ADDR + 0x3000UL)		//SPI 1 base addr
+#define SPI4_BASE_ADDR   (APB2_BASE_ADDR + 0x3400UL)		//SPI 4 base addr
+
+#define SYSCFG_BASE_ADDR (APB2_BASE_ADDR + 0x3800UL)        //SYSCFG base addr
+
+#define EXTI_BASE_ADDR   (APB2_BASE_ADDR + 0x3C00UL)		//EXTI base addr
+
+
+
+
+
+/*
+ * AHB1 Peripherals Base Addresses
+ *
+ */
+
+#define GPIOA_BASE_ADDR (AHB1_BASE_ADDR + 0x0000UL)			//GPIO_A Base addr
+#define GPIOB_BASE_ADDR (AHB1_BASE_ADDR + 0x0400UL)			//GPIO_B Base addr
+#define GPIOC_BASE_ADDR (AHB1_BASE_ADDR + 0x0800UL)			//GPIO_C Base addr
+#define GPIOD_BASE_ADDR (AHB1_BASE_ADDR + 0x0C00UL)			//GPIO_D Base addr
+#define GPIOE_BASE_ADDR (AHB1_BASE_ADDR + 0x1000UL)			//GPIO_E Base addr
+#define GPIOF_BASE_ADDR (AHB1_BASE_ADDR + 0x1400UL)			//GPIO_F Base addr
+#define GPIOG_BASE_ADDR (AHB1_BASE_ADDR + 0x1800UL)			//GPIO_G Base addr
+#define GPIOH_BASE_ADDR (AHB1_BASE_ADDR + 0x1C00UL)			//GPIO_H Base addr
+#define GPIOI_BASE_ADDR (AHB1_BASE_ADDR + 0x2000UL)			//GPIO_I Base addr
+#define GPIOJ_BASE_ADDR (AHB1_BASE_ADDR + 0x2400UL)			//GPIO_J Base addr
+#define GPIOK_BASE_ADDR (AHB1_BASE_ADDR + 0x2800UL)			//GPIO_K Base addr
+
+#define RCC_BASE_ADDR   (AHB1_BASE_ADDR + 0x3800UL)			//RCC base addr
+
+
+
+
+/*
+ * Peripheral Structure Definitions
+ *
+ */
+
+typedef struct
+{
+	__IO  uint32_t MODER;
+	__IO  uint32_t OTYPER;
+	__IO  uint32_t OSPEEDR;
+	__IO  uint32_t PUPDR;
+	__IO  uint32_t IDR;
+	__IO  uint32_t ODR;
+	__IO  uint32_t BSRR;
+	__IO  uint32_t LCKR;
+	__IO  uint32_t AFR[2];
+
+
+
+}GPIO_TypeDef_t;
+
+
+//struct yapımız 4 byte değerlerden oluştuğundan dolayı ve cast yaptığımzdan dolayı 4 byte 4 byte struct gezilecek ve istenen hedefe ulaşılabilecek.
+
+typedef struct{
+	__IO  uint32_t CR;
+	__IO  uint32_t PLLCFGR;
+	__IO  uint32_t CFGR;
+	__IO  uint32_t CIR;
+	__IO  uint32_t AHB1RSTR;
+	__IO  uint32_t AHB2RSTR;
+	__IO  uint32_t AHB3RSTR;
+	__IO  uint32_t RESERVED0; // RESERVED LARI EKLEMEZSEM KODUM BOZULUR 4 BYTE DEĞİLDE 8 BYTE ATLAMAM GEREKİR BU DA STRUCT YAPIMDAN DOLAYI İMKANSIZ
+	__IO  uint32_t APB1RSTR;
+	__IO  uint32_t APB2RSTR;
+	__IO  uint32_t RESERVED1[2];
+	__IO  uint32_t AHB1ENR;
+	__IO  uint32_t AHB2ENR;
+	__IO  uint32_t AHB3ENR;
+	__IO  uint32_t RESERVED2;
+	__IO  uint32_t APB1ENR;
+	__IO  uint32_t APB2ENR;
+	__IO  uint32_t RESERVED3[2];
+	__IO  uint32_t AHB1LPENR;
+	__IO  uint32_t AHB2LPENR;
+	__IO  uint32_t AHB3LPENR;
+	__IO  uint32_t RESERVED4;
+	__IO  uint32_t APB1LPENR;
+	__IO  uint32_t APB2LPENR;
+	__IO  uint32_t RESERVED5[2];
+	__IO  uint32_t BDCR;
+	__IO  uint32_t CSR;
+	__IO  uint32_t RESERVED6[2];
+	__IO  uint32_t SSCGR;
+	__IO  uint32_t PLLI2SCFGR;
+
+
+}RCC_typDef_t;
+
+
+
+#define GPIOA ( (GPIO_TypeDef_t*) (GPIOA_BASE_ADDR) )
+#define GPIOB ( (GPIO_TypeDef_t*) (GPIOB_BASE_ADDR) )
+#define GPIOC ( (GPIO_TypeDef_t*) (GPIOC_BASE_ADDR) )
+#define GPIOD ( (GPIO_TypeDef_t*) (GPIOD_BASE_ADDR) )
+#define GPIOE ( (GPIO_TypeDef_t*) (GPIOE_BASE_ADDR) )
+
+#define RCC   ( (RCC_typDef_t*  ) (RCC_BASE_ADDR  ) )
+
+
+
+
+
+
+
+
+
+
+#endif /* INC_STM32F407XX_H_ */
