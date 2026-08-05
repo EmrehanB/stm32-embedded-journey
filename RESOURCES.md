@@ -28,4 +28,4 @@ Bu depodaki çalışmalar sırasında faydalandığım kurslar, resmi dokümanla
 
 ## Türkçe
 
-Bu depodaki çalışmalar boyunca faydalandığım kurslar, resmi dokümanlar ve okuduğum makalelerin listesi. Kaynak göstermek amacıyla tutuluyor.
+Bu depodaki çalışmalar boyunca faydalandığım kurslar, resmi dokümanlar ve okuduğum makalelerin listesi. Kaynak göstermek amacıyla tutuluyor. Çalıştıkça burayı geniletiyorum.
