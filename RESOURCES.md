@@ -1,6 +1,6 @@
 # Kaynaklar ve Makaleler / Resources & Articles
 
-Bu depodaki çalışmalar sırasında faydalandığım kurslar, resmi dokümanlar ve makaleler.
+The courses, official documentation, and articles I benefited from while working on this repository.
 
 ## Kurslar (Courses)
 
