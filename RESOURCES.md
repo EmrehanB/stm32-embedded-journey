@@ -1,6 +1,6 @@
 # Kaynaklar ve Makaleler / Resources & Articles
 
-The courses, official documentation, and articles I benefited from while working on this repository.
+The courses, official documentation, and articles/resources I benefited from while working on this repository.
 
 ## Kurslar (Courses)
 
