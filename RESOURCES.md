@@ -16,12 +16,13 @@ Bu depodaki çalışmalar sırasında faydalandığım kurslar, resmi dokümanla
 - STM32F407G-DISC1 Schematic
 - Cortex-M4 Technical Reference Manual (ARM)
 
-## Makaleler (Articles)
+## Makaleler ve Kaynaklar (Articles & Resources)
 
 - [Introduction To The Volatile Keyword In C/C++](https://www.embedded.com/introduction-to-the-volatile-keyword/) — Nigel Jones, Embedded.com
 - [Memory Space — an overview](https://www.sciencedirect.com/topics/engineering/memory-space) — ScienceDirect Topics
 - [What are Header Files in C Programming?](https://usemynotes.com/what-are-header-files-in-c/) — Alimam Miya, UseMyNotes
 - [The Advanced Microcontroller Bus Architecture: An Introduction](https://www.allaboutcircuits.com/technical-articles/introduction-to-the-advanced-microcontroller-bus-architecture/) — Stephen St. Michael, All About Circuits
+- [How do header and source files in C work?](https://stackoverflow.com/questions/5904530/how-do-header-and-source-files-in-c-work) — Stack Overflow
 
 ---
 
