@@ -49,26 +49,6 @@ driver-development/
 
 The repository-level [`projects/`](../projects) directory is separate — it holds standalone embedded projects not built around this library.
 
-## Usage
-
-Driving the green LED on PD12 of the Discovery board:
-
-```c
-#include "stm32f407xx.h"
-
-int main(void)
-{
-    RCC_GPIOD_CLK_ENABLE();
-
-    /* GPIO_Init() is under development —
-       MODER configuration is done manually for now. */
-
-    GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_Pin_Set);
-
-    for (;;);
-}
-```
-
 `GPIO_WritePin` writes to BSRR (Bit Set/Reset Register) rather than performing a read-modify-write on ODR (Output Data Register), which makes the operation atomic and interrupt-safe.
 
 ## Design Notes
