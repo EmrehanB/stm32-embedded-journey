@@ -8,6 +8,18 @@
 #define __IO volatile
 
 
+#define SET_BIT(REG,BIT)       ( (REG) |=  (BIT) )
+
+#define CLEAR_BIT(REG,BIT)     ( (REG) &= ~(BIT) )
+
+#define READ_BIT(REG,BIT)      ( (REG)  &  (BIT) )
+
+#define UNUSED(x)              (void)x  //Kullanmama uyarısı vermesin diye tanımladım.
+
+
+
+
+
 /*
  * Memory Base addrs
  *
@@ -179,6 +191,25 @@ typedef struct{
 #define RCC   ( (RCC_typDef_t*  ) (RCC_BASE_ADDR  ) )
 
 
+//Bit tanımlamaları (bit definitions)
+
+
+
+#define RCC_AHB1ENR_GPIOAEN_POSITION  (0U)                                      // RCC AHB1ENRegister GPIOAEN bit konumu
+#define RCC_AHB1ENR_GPIOAEN_MASK      (0x1 << RCC_AHB1ENR_GPIOAEN_POSITION )    // RCC AHB1ENRegister GPIOAEN bit mask (0x01<<1)
+#define RCC_AHB1ENR_GPIOAEN           RCC_AHB1ENR_GPIOAEN_MASK                  // RCC AHB1ENRegister GPIOAEN macro
+
+#define RCC_AHB1ENR_GPIOBEN_POSITION  (1U)										// RCC AHB1ENRegister GPIOBEN bit konumu
+#define RCC_AHB1ENR_GPIOBEN_MASK      (0x1 << RCC_AHB1ENR_GPIOBEN_POSITION )	// RCC AHB1ENRegister GPIOBEN bit mask (0x01<<1)
+#define RCC_AHB1ENR_GPIOBEN           RCC_AHB1ENR_GPIOBEN_MASK					// RCC AHB1ENRegister GPIOBEN macro
+
+#define RCC_AHB1ENR_GPIOCEN_POSITION  (2U)                                      // RCC AHB1ENRegister GPIOCEN bit konumu
+#define RCC_AHB1ENR_GPIOCEN_MASK      (0x1 << RCC_AHB1ENR_GPIOCEN_POSITION )    // RCC AHB1ENRegister GPIOCEN bit mask (0x01<<1)
+#define RCC_AHB1ENR_GPIOCEN           RCC_AHB1ENR_GPIOCEN_MASK                  // RCC AHB1ENRegister GPIOCEN macro
+
+#define RCC_AHB1ENR_GPIODEN_POSITION  (3U)                                      // RCC AHB1ENRegister GPIODEN bit konumu
+#define RCC_AHB1ENR_GPIODEN_MASK      (0x1 << RCC_AHB1ENR_GPIODEN_POSITION )    // RCC AHB1ENRegister GPIODEN bit mask (0x01<<1)
+#define RCC_AHB1ENR_GPIODEN           RCC_AHB1ENR_GPIODEN_MASK                  // RCC AHB1ENRegister GPIODEN macro
 
 
 
@@ -186,5 +217,8 @@ typedef struct{
 
 
 
+
+#include "RCC.h"
+#include "GPIO.h"
 
 #endif /* INC_STM32F407XX_H_ */
