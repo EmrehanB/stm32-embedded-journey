@@ -1,139 +1,111 @@
-# README.md Kaynak Metni
+# STM32F407 Bare-Metal Driver Library
 
-````markdown
-# STM32F407 Bare-Metal Driver Development
+A reusable peripheral driver library for the STM32F407, written from scratch at register level using only the reference manual and datasheet.
 
-A bare-metal driver development track based on the Udemy course **Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)** by **Erhan Konak**.
+No HAL (Hardware Abstraction Layer) or CMSIS (Cortex Microcontroller Software Interface Standard) peripheral drivers are used. Every register access is written and verified against [RM0090](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#documentation).
 
-The goal of this section is to build a reusable STM32F407 driver library from scratch at register level and then use that library in separate embedded projects.
+This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* by Erhan Konak. It is intentionally kept outside the `course-N` numbering used for the [Fastbit sequence](../) because it is a separate learning resource with a different structure.
 
-No HAL (Hardware Abstraction Layer) peripheral drivers are used.
+## Status
 
-This track is kept outside the `course-N` numbering used for the Fastbit sequence because it follows a separate learning resource.
+| Component | Status | Scope |
+|---|---|---|
+| [`stm32f407xx.h`](driver-library/Inc/stm32f407xx.h) | Working | Base addresses, register structs, peripheral pointers, bit definitions |
+| [`RCC`](driver-library/Inc/RCC.h) | Working | GPIO peripheral clock enable / disable |
+| [`GPIO`](driver-library/Inc/GPIO.h) | In progress | Pin masks, pin state type, `GPIO_WritePin` done — `GPIO_Init` in development |
+| `SPI` | Planned | — |
+| `USART` | Planned | — |
+| `I2C` | Planned | — |
+
+## Hardware and Toolchain
+
+| | |
+|---|---|
+| Board | [STM32F407G-DISC1 (Discovery)](https://www.st.com/en/evaluation-tools/stm32f4discovery.html) |
+| MCU | [STM32F407VGT6](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html) — ARM Cortex-M4F, 168 MHz |
+| IDE | [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html) |
+| Toolchain | GNU Arm Embedded (`arm-none-eabi-gcc`) |
+| Language | C, bare-metal |
 
 ## Structure
 
 ```text
 driver-development/
-├── driver-library/
+├── driver-library/          # the drivers themselves
 │   ├── Inc/
-│   │   ├── stm32f407xx.h
-│   │   ├── RCC.h
-│   │   └── GPIO.h
+│   │   ├── stm32f407xx.h    # device header — hardware description
+│   │   ├── RCC.h            # clock control interface
+│   │   └── GPIO.h           # GPIO interface
 │   └── Src/
 │       ├── RCC.c
 │       └── GPIO.c
 │
-├── driver-projects/
+├── driver-projects/         # applications built on top of the library
 │
 └── README.md
 ```
 
-## Driver Library
+`driver-library/` is the reusable layer. `driver-projects/` will hold small applications that consume it, so that no application file ever touches a register directly.
 
-`driver-library/` contains the reusable low-level driver code.
+The repository-level [`projects/`](../projects) directory is separate — it holds standalone embedded projects not built around this library.
 
-### Current Components
+## Usage
 
-- `stm32f407xx.h`
-  - Device-specific header for the STM32F407xx family
-  - Memory and peripheral base addresses
-  - APB1, APB2, AHB1 and AHB2 bus domains
-  - Peripheral register structures
-  - Peripheral pointer definitions
-  - Register bit definitions
-  - Common register manipulation macros
+Driving the green LED on PD12 of the Discovery board:
 
-- `RCC.h / RCC.c`
-  - RCC (Reset and Clock Control) driver infrastructure
-  - GPIO peripheral clock enable/disable support
+```c
+#include "stm32f407xx.h"
 
-- `GPIO.h / GPIO.c`
-  - GPIO (General Purpose Input/Output) driver
-  - GPIO pin definitions
-  - GPIO pin state abstraction
-  - Register-level GPIO operations
+int main(void)
+{
+    RCC_GPIOD_CLK_ENABLE();
 
-Additional drivers will be added as the course progresses:
+    /* GPIO_Init() is under development —
+       MODER configuration is done manually for now. */
 
-- SPI
-- USART
-- I2C
+    GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_Pin_Set);
 
-## Driver Projects
-
-`driver-projects/` will contain small embedded applications developed using **my own driver library**.
-
-The purpose of these projects is to use and test the reusable driver layer without placing low-level register operations directly inside application code.
-
-Projects will be added as they are completed.
-
-The separation is:
-
-```text
-driver-library/
-→ reusable low-level driver implementation
-
-driver-projects/
-→ applications built using the driver library
+    for (;;);
+}
 ```
 
-The repository-level `projects/` directory remains separate and contains standalone embedded projects that are not specifically built to demonstrate this driver library.
+`GPIO_WritePin` writes to BSRR (Bit Set/Reset Register) rather than performing a read-modify-write on ODR (Output Data Register), which makes the operation atomic and interrupt-safe.
 
-## Purpose
+## Design Notes
 
-The main objective of this track is to understand what happens underneath vendor libraries by implementing peripheral support directly from the STM32F407 reference manual and datasheet.
+The library is organised in layers, and the layer boundary is the point of the exercise:
 
-The project currently covers concepts such as:
+**1. Hardware description** — `stm32f407xx.h` answers *how is the silicon laid out?* Base addresses, register maps as structs, bit positions and masks. Nothing here knows what a driver is.
 
-- Memory-mapped I/O
-- Peripheral memory maps
-- Register structures
-- Peripheral base addresses
-- Clock control
-- Bit masks and register manipulation
-- GPIO pin abstraction
-- Reusable driver interfaces
+**2. Interface** — `RCC.h`, `GPIO.h` answer *what does a driver user get to call?* Symbolic pin masks, state enums, function prototypes.
+
+**3. Implementation** — `RCC.c`, `GPIO.c` answer *how is that interface realised in registers?*
+
+**4. Application** — code under `driver-projects/`. It should not know GPIOD's base address, BSRR's offset, or which half of BSRR resets a pin.
+
+Two specific decisions worth recording:
+
+- Register structs include explicit `RESERVED` members. The compiler lays struct members out contiguously, so gaps in the peripheral memory map must be padded or every member after the gap resolves to the wrong address.
+- Clock-enable macros read the register back after writing it. On this bus architecture the write may not have taken effect by the time the next instruction accesses the peripheral; the read-back forces completion. The value is discarded through `UNUSED()`.
+
+## References
+
+- [RM0090 Reference Manual](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#documentation) — register-level source of truth
+- [STM32F407VG datasheet](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#documentation) — pinout, electrical characteristics
+- [STM32F4DISCOVERY user manual and schematic](https://www.st.com/en/evaluation-tools/stm32f4discovery.html#documentation) — board wiring, LED and button pin assignments
+- [Cortex-M4 Technical Reference Manual](https://developer.arm.com/documentation/100166/latest/) — core architecture
+- Further reading is collected in [`RESOURCES.md`](../RESOURCES.md)
 
 ---
 
-## Türkçe
+## Türkçe Özet
 
-Bu bölümde STM32F407 için kendi bare-metal sürücü kütüphanemi register seviyesinde geliştiriyorum.
+STM32F407 için register seviyesinde, sıfırdan yazılmış tekrar kullanılabilir bir sürücü kütüphanesi. HAL ve CMSIS çevre birimi sürücüleri kullanılmıyor; tüm register erişimleri RM0090 referans kılavuzuyla doğrulanıyor.
 
-Çalışma, Erhan Konak'ın Udemy'deki **Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)** kursunu temel alıyor.
+Erhan Konak'ın *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* Udemy kursunu temel alıyor. Fastbit serisinin `course-N` numaralandırmasından ayrı tutulmasının sebebi farklı bir kaynak olması.
 
-Amaç yalnızca kurs kodlarını tekrar etmek değil; tekrar kullanılabilir bir driver altyapısı oluşturmak ve daha sonra bu driver'ları ayrı projelerde kullanmak.
+Kütüphane katmanlı bir yapıda: `stm32f407xx.h` donanımı tarif eder, `GPIO.h` / `RCC.h` kullanıcıya sunulan arayüzü tanımlar, `.c` dosyaları bu arayüzü register seviyesinde gerçekler, uygulama kodu ise register bilmez.
 
-HAL (Hardware Abstraction Layer) çevre birimi sürücüleri kullanılmıyor.
+Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor, GPIO sürücüsü geliştirme aşamasında (`GPIO_WritePin` tamamlandı, `GPIO_Init` sürüyor). SPI, USART ve I2C kurs ilerledikçe eklenecek.
 
-### Yapı
-
-`driver-library/`, geliştirdiğim tekrar kullanılabilir düşük seviyeli sürücüleri içerir.
-
-Şu anda:
-
-- STM32F407 device-specific header
-- RCC (Reset and Clock Control) altyapısı
-- GPIO (General Purpose Input/Output) sürücüsü
-
-bulunmaktadır.
-
-Kurs ilerledikçe SPI, USART ve I2C sürücüleri de aynı kütüphaneye eklenecektir.
-
-`driver-projects/` ise yalnızca kendi geliştirdiğim driver kütüphanesini kullanarak oluşturduğum uygulamaları içerecektir.
-
-Böylece:
-
-```text
-driver-library/
-→ sürücünün kendisi
-
-driver-projects/
-→ sürücüyü kullanan projeler
-```
-
-birbirinden ayrılmış olur.
-
-Repository kökündeki `projects/` klasörü ise driver kütüphanesinden bağımsız genel embedded projeler için kullanılmaya devam eder.
-````
+`driver-projects/` klasörü, bu kütüphaneyi kullanan küçük uygulamalar için ayrıldı. Repository kökündeki `projects/` klasörü ise kütüphaneden bağımsız genel projeler için kalmaya devam ediyor.
