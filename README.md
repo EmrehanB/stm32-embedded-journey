@@ -2,11 +2,22 @@
 
 Embedded systems programming on STM32, from bare-metal upwards.
 
-**Board:** STM32F407G-DISC1 (Discovery) · **MCU:** STM32F407VGT6 (ARM Cortex-M4) · **Toolchain:** STM32CubeIDE
+**Board:** [STM32F407G-DISC1 (Discovery)](https://www.st.com/en/evaluation-tools/stm32f4discovery.html) · **MCU:** [STM32F407VGT6](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html) (ARM Cortex-M4) · **Toolchain:** [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html)
+
+Everything here is written at register level against [RM0090](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#documentation) — no HAL (Hardware Abstraction Layer), no CMSIS (Cortex Microcontroller Software Interface Standard) peripheral drivers. The aim is to understand what vendor libraries do underneath rather than to call them.
 
 Each exercise lives in its own folder with a dedicated README explaining the approach. The repo grows with new sections as the courses progress.
 
 See [RESOURCES.md](./RESOURCES.md) for courses, reference documents, and articles used throughout this repo.
+
+## Contents
+
+| Section | Focus | Status |
+|---|---|---|
+| [Course 1](#course-1--bare-metal-embedded-c) | Bare-metal embedded C | Completed — 11 exercises |
+| [Course 2](#course-2--arm-cortex-m-architecture) | Cortex-M processor architecture | Paused at memory map & bus interfaces |
+| [Driver Development](#driver-development) | Reusable peripheral driver library | Active |
+| [Projects](#projects) | Standalone applications | Ongoing |
 
 ---
 
@@ -32,20 +43,31 @@ Register-level bare-metal C, no HAL. GPIO, `volatile`, structs/unions, bit-field
 
 ## Course 2 — ARM Cortex-M Architecture
 
-Cortex-M3/M4 processor internals: operational modes, register set, MSP/PSP banked stack, exception & interrupt handling (NVIC), memory map, bus interfaces, bit-banding, bootloader/IAP.
+Cortex-M3/M4 processor internals: operational modes, register set, MSP/PSP banked stack, exception & interrupt handling via NVIC (Nested Vectored Interrupt Controller), memory map, bus interfaces, bit-banding, bootloader/IAP.
+
+Reference: [Cortex-M4 Technical Reference Manual](https://developer.arm.com/documentation/100166/latest/).
 
 | # | Exercise | Topic | Details |
 |---|----------|-------|---------|
 | 01 | Inline asm: add in memory | Inline assembly, LDR/STR, load-store architecture | [01-inline-asm-add](./course-2-cortex-m/01-inline-asm-add) |
 | 02 | Inline asm: constraints & MRS | Constraint strings (r/=r/i), reading CONTROL with MRS | [02-inline-asm-constraints](./course-2-cortex-m/02-inline-asm-constraints) |
 
+Currently paused at the memory map and bus interface section; resumes after the driver development track.
+
 ---
 
 ## Driver Development
 
-GPIO, SPI, USART, I2C drivers at the register level, by Erhan Konak on Udemy. Kept outside the `course-N` numbering since it's a separate source, not part of the Fastbit sequence above.
+A reusable STM32F407 peripheral driver library built from scratch, following the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* by Erhan Konak. Kept outside the `course-N` numbering since it's a separate source, not part of the Fastbit sequence above.
 
-Starting point: a device-specific header (`stm32f407xx.h`) with memory and peripheral base addresses. More files will be added as exercises are completed.
+Split into two layers: `driver-library/` holds the drivers themselves, `driver-projects/` holds applications that consume them — so application code never touches a register directly.
+
+| Component | Status |
+|---|---|
+| `stm32f407xx.h` — device header, base addresses, register structs | Working |
+| `RCC` — peripheral clock enable/disable | Working |
+| `GPIO` — pin masks, pin state, write | In progress |
+| `SPI` · `USART` · `I2C` | Planned |
 
 Details: [driver-development](./driver-development)
 
@@ -64,4 +86,8 @@ Standalone projects combining skills from completed exercises — not tied to a 
 
 ## Türkçe
 
-STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Repo dört bölümden oluşuyor: **Course 1** bare-metal embedded C (register seviyesi, HAL'siz), **Course 2** ARM Cortex-M işlemci mimarisi, **Driver Development** GPIO/SPI/USART/I2C sürücü geliştirme (Fastbit dizisinden ayrı bir kaynak), **Projects** ise kurs alıştırmalarından bağımsız, kazanılan becerileri birleştiren kendi projelerim.
+STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Tüm kod register seviyesinde, RM0090 referans kılavuzuna karşı yazılıyor; HAL ve CMSIS çevre birimi sürücüleri kullanılmıyor.
+
+Repo dört bölümden oluşuyor: **Course 1** bare-metal embedded C (tamamlandı, 11 alıştırma), **Course 2** ARM Cortex-M işlemci mimarisi (bellek haritası bölümünde duraklatıldı), **Driver Development** kendi sürücü kütüphanem — GPIO/SPI/USART/I2C (aktif olarak geliştiriliyor), **Projects** ise kurs alıştırmalarından bağımsız, kazanılan becerileri birleştiren kendi projelerim.
+
+Her alıştırma klasörü kendi README dosyasıyla birlikte, yaklaşımı açıklayarak duruyor.
