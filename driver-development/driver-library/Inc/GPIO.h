@@ -107,6 +107,8 @@ GPIO_PinState_t GPIO_ReadPin(GPIO_TypeDef_t *GPIOx , uint16_t pinNumber );
 
 void GPIO_LockPin(GPIO_TypeDef_t *GPIOx, uint16_t pinNumber );
 
+void GPIO_TogglePin(GPIO_TypeDef_t *GPIOx , uint16_t pinNumber);
+
 
 
 

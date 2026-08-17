@@ -118,6 +118,13 @@ void GPIO_LockPin(GPIO_TypeDef_t *GPIOx, uint16_t pinNumber ){
 
 }
 
+void GPIO_TogglePin(GPIO_TypeDef_t *GPIOx , uint16_t pinNumber){
+
+	uint32_t tempOdrRegister = GPIOx->ODR;
+	GPIOx->BSRR = ((tempOdrRegister &  pinNumber) << 16) |  (~tempOdrRegister & pinNumber);
+
+}
+
 
 
 
