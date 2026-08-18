@@ -10,9 +10,10 @@ This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, 
 
 | Component | Status | Scope |
 |---|---|---|
-| [`stm32f407xx.h`](driver-library/Inc/stm32f407xx.h) | Working | Base addresses, register structs, peripheral pointers, bit definitions |
-| [`RCC`](driver-library/Inc/RCC.h) | Working | GPIO peripheral clock enable / disable |
-| [`GPIO`](driver-library/Inc/GPIO.h) | In progress | Pin masks, pin state type, `GPIO_WritePin` done — `GPIO_Init` in development |
+| [`stm32f407xx.h`](driver-library/Inc/stm32f407xx.h) | Working | Base addresses, register structs (GPIO, RCC, SYSCFG, EXTI), peripheral pointers, bit definitions |
+| [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports and SYSCFG |
+| [`GPIO`](driver-library/Inc/GPIO.h) | In progress | Init, read, write, toggle, lock — alternate function (AFR) not yet implemented |
+| [`EXTI`](driver-library/Inc/EXTI.h) | In progress | SYSCFG line routing done — trigger selection, masking and NVIC setup pending |
 | `SPI` | Planned | — |
 | `USART` | Planned | — |
 | `I2C` | Planned | — |
@@ -35,21 +36,55 @@ driver-development/
 │   ├── Inc/
 │   │   ├── stm32f407xx.h    # device header — hardware description
 │   │   ├── RCC.h            # clock control interface
-│   │   └── GPIO.h           # GPIO interface
+│   │   ├── GPIO.h           # GPIO interface
+│   │   └── EXTI.h           # external interrupt interface
 │   └── Src/
 │       ├── RCC.c
-│       └── GPIO.c
+│       ├── GPIO.c
+│       └── EXTI.c
 │
 ├── driver-projects/         # applications built on top of the library
+│   ├── 01-four-led-on/
+│   └── 02-button-controlled-led/
 │
 └── README.md
 ```
 
-`driver-library/` is the reusable layer. `driver-projects/` will hold small applications that consume it, so that no application file ever touches a register directly.
+`driver-library/` is the reusable layer. `driver-projects/` holds small applications that consume it, so that no application file ever touches a register directly.
 
 The repository-level [`projects/`](../projects) directory is separate — it holds standalone embedded projects not built around this library.
 
-`GPIO_WritePin` writes to BSRR (Bit Set/Reset Register) rather than performing a read-modify-write on ODR (Output Data Register), which makes the operation atomic and interrupt-safe.
+## Usage
+
+Driving the green LED on PD12 of the Discovery board:
+
+```c
+#include "stm32f407xx.h"
+
+int main(void)
+{
+    RCC_GPIOD_CLK_ENABLE();
+
+    GPIO_InitTtypedef cfg = {0};
+    cfg.pinNumber = GPIO_PIN_12;
+    cfg.Mode      = GPIO_MODE_OUTPUT;
+    cfg.Otype     = GPIO_OTYPE_PP;
+    cfg.Speed     = GPIO_SPEED_LOW;
+    cfg.PuPd      = GPIO_PUPD_NOPULL;
+    GPIO_Init(GPIOD, &cfg);
+
+    GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_Pin_Set);
+
+    for (;;);
+}
+```
+
+Routing PA0 to EXTI line 0:
+
+```c
+RCC_SYSCFG_CLK_ENABLE();
+EXTI_LineConfig(EXTI_PortSource_GPIOA, EXTI_LineSource_0);
+```
 
 ## Design Notes
 
@@ -57,16 +92,21 @@ The library is organised in layers, and the layer boundary is the point of the e
 
 **1. Hardware description** — `stm32f407xx.h` answers *how is the silicon laid out?* Base addresses, register maps as structs, bit positions and masks. Nothing here knows what a driver is.
 
-**2. Interface** — `RCC.h`, `GPIO.h` answer *what does a driver user get to call?* Symbolic pin masks, state enums, function prototypes.
+**2. Interface** — `RCC.h`, `GPIO.h`, `EXTI.h` answer *what does a driver user get to call?* Symbolic pin masks, state enums, function prototypes.
 
-**3. Implementation** — `RCC.c`, `GPIO.c` answer *how is that interface realised in registers?*
+**3. Implementation** — `RCC.c`, `GPIO.c`, `EXTI.c` answer *how is that interface realised in registers?*
 
 **4. Application** — code under `driver-projects/`. It should not know GPIOD's base address, BSRR's offset, or which half of BSRR resets a pin.
 
-Two specific decisions worth recording:
+Decisions worth recording:
 
-- Register structs include explicit `RESERVED` members. The compiler lays struct members out contiguously, so gaps in the peripheral memory map must be padded or every member after the gap resolves to the wrong address.
-- Clock-enable macros read the register back after writing it. On this bus architecture the write may not have taken effect by the time the next instruction accesses the peripheral; the read-back forces completion. The value is discarded through `UNUSED()`.
+- **Register structs include explicit `RESERVED` members.** The compiler lays struct members out contiguously, so gaps in the peripheral memory map must be padded or every member after the gap resolves to the wrong address. RCC has six such gaps; SYSCFG has one.
+
+- **Clock-enable macros read the register back after writing it.** On this bus architecture the write may not have taken effect by the time the next instruction accesses the peripheral; the read-back forces completion. The value is discarded through `UNUSED()`.
+
+- **`GPIO_WritePin` uses BSRR, not ODR.** Writing to BSRR is a single, indivisible store: it expresses the change as a delta rather than an absolute value, so no read-modify-write is needed and no interrupt can corrupt it.
+
+- **Bit-field width drives the shift arithmetic.** OTYPER gives each pin 1 bit (shift by `position`), MODER/OSPEEDR/PUPDR give 2 bits (shift by `2 * position`), and SYSCFG's EXTICR gives 4 bits spread across four registers (index by `line >> 2`, shift by `(line & 3) * 4`). Same pattern, different partitioning.
 
 ## References
 
@@ -84,8 +124,8 @@ STM32F407 için register seviyesinde, sıfırdan yazılmış tekrar kullanılabi
 
 Erhan Konak'ın *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* Udemy kursunu temel alıyor. Fastbit serisinin `course-N` numaralandırmasından ayrı tutulmasının sebebi farklı bir kaynak olması.
 
-Kütüphane katmanlı bir yapıda: `stm32f407xx.h` donanımı tarif eder, `GPIO.h` / `RCC.h` kullanıcıya sunulan arayüzü tanımlar, `.c` dosyaları bu arayüzü register seviyesinde gerçekler, uygulama kodu ise register bilmez.
+Kütüphane katmanlı bir yapıda: `stm32f407xx.h` donanımı tarif eder, `GPIO.h` / `RCC.h` / `EXTI.h` kullanıcıya sunulan arayüzü tanımlar, `.c` dosyaları bu arayüzü register seviyesinde gerçekler, uygulama kodu ise register bilmez.
 
-Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor, GPIO sürücüsü geliştirme aşamasında (`GPIO_WritePin` tamamlandı, `GPIO_Init` sürüyor). SPI, USART ve I2C kurs ilerledikçe eklenecek.
+Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi yazıldı; kenar seçimi, maskeleme ve NVIC yapılandırması bekliyor. SPI, USART ve I2C kurs ilerledikçe eklenecek.
 
 `driver-projects/` klasörü, bu kütüphaneyi kullanan küçük uygulamalar için ayrıldı. Repository kökündeki `projects/` klasörü ise kütüphaneden bağımsız genel projeler için kalmaya devam ediyor.

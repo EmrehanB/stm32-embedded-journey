@@ -146,6 +146,7 @@ typedef struct
 //struct yapımız 4 byte değerlerden oluştuğundan dolayı ve cast yaptığımzdan dolayı 4 byte 4 byte struct gezilecek ve istenen hedefe ulaşılabilecek.
 
 typedef struct{
+
 	__IO  uint32_t CR;
 	__IO  uint32_t PLLCFGR;
 	__IO  uint32_t CFGR;
@@ -182,13 +183,48 @@ typedef struct{
 
 
 
-#define GPIOA ( (GPIO_TypeDef_t*) (GPIOA_BASE_ADDR) )
-#define GPIOB ( (GPIO_TypeDef_t*) (GPIOB_BASE_ADDR) )
-#define GPIOC ( (GPIO_TypeDef_t*) (GPIOC_BASE_ADDR) )
-#define GPIOD ( (GPIO_TypeDef_t*) (GPIOD_BASE_ADDR) )
-#define GPIOE ( (GPIO_TypeDef_t*) (GPIOE_BASE_ADDR) )
 
-#define RCC   ( (RCC_typDef_t*  ) (RCC_BASE_ADDR  ) )
+typedef struct{
+
+	__IO uint32_t MEMRMP;       //SYSCFG memory remap register ve                       adres offset = 0x00
+	__IO uint32_t PMC; 			//SYSCFG peripheral mode configuration register         adres offset = 0x04
+	__IO uint32_t EXTI_CR[4];	//SYSCFG external interrupt configuration registers     adres offset = 0x08
+	__IO uint32_t RESERVED[2];
+	__IO uint32_t CMPCR;		//Compensation cell control register                    adres offset = 0x20
+
+
+}SYSCFG_typeDef_t;
+
+
+
+
+typedef struct{
+
+	__IO uint32_t IMR;			//Interrupt mask register								adres offset = 0x00
+	__IO uint32_t EMR;			//Event mask register									adres offset = 0x04
+	__IO uint32_t RTSR;			//Rising trigger selection register						adres offset = 0x08
+	__IO uint32_t FTSR;			//Falling trigger selection register					adres offset = 0x0C
+	__IO uint32_t SWIER;		//Software interrupt event register						adres offset = 0x10
+	__IO uint32_t PR;			//Pending register										adres offset = 0x14
+
+
+}EXTI_typeDef_t;
+
+
+
+
+
+#define GPIOA 	( (GPIO_TypeDef_t*) GPIOA_BASE_ADDR )
+#define GPIOB 	( (GPIO_TypeDef_t*) GPIOB_BASE_ADDR )
+#define GPIOC 	( (GPIO_TypeDef_t*) GPIOC_BASE_ADDR )
+#define GPIOD 	( (GPIO_TypeDef_t*) GPIOD_BASE_ADDR )
+#define GPIOE 	( (GPIO_TypeDef_t*) GPIOE_BASE_ADDR )
+
+#define RCC   	( (RCC_typDef_t*  ) RCC_BASE_ADDR   )
+
+#define SYSCFG 	( (SYSCFG_typeDef_t *) SYSCFG_BASE_ADDR )
+
+#define EXTI    ( (EXTI_typeDef_t *) EXTI_BASE_ADDR)
 
 
 //Bit tanımlamaları (bit definitions)
@@ -214,11 +250,20 @@ typedef struct{
 
 
 
+#define RCC_APB2ENR_SYSCFG_POSITION   (14U)
+#define RCC_APB2ENR_SYSCFG_MASK    	  (0x1 << RCC_APB2ENR_SYSCFG_POSITION  )
+#define RCC_APB2ENR_SYSCFG            RCC_APB2ENR_SYSCFG_MASK
 
 
 
+
+
+
+
+//Bu bölüm sayesinde maine sadece "stm32f407xx.h" include etmem yeterli olacaktır.
 
 #include "RCC.h"
 #include "GPIO.h"
+#include "EXTI.h"
 
 #endif /* INC_STM32F407XX_H_ */

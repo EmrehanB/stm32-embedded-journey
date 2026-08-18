@@ -66,7 +66,8 @@ Split into two layers: `driver-library/` holds the drivers themselves, `driver-p
 |---|---|
 | `stm32f407xx.h` — device header, base addresses, register structs | Working |
 | `RCC` — peripheral clock enable/disable | Working |
-| `GPIO` — pin masks, pin state, read, write, toggle, lock | In progress |
+| `GPIO` — init, read, write, toggle, lock | In progress |
+| `EXTI` — SYSCFG line routing | In progress |
 | `SPI` · `USART` · `I2C` | Planned |
 
 Details: [driver-development](./driver-development)
@@ -88,6 +89,6 @@ Standalone projects combining skills from completed exercises — not tied to a 
 
 STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Tüm kod register seviyesinde, RM0090 referans kılavuzuna karşı yazılıyor; HAL ve CMSIS çevre birimi sürücüleri kullanılmıyor.
 
-Repo dört bölümden oluşuyor: **Course 1** bare-metal embedded C (tamamlandı, 11 alıştırma), **Course 2** ARM Cortex-M işlemci mimarisi (bellek haritası bölümünde duraklatıldı), **Driver Development** kendi sürücü kütüphanem — GPIO/SPI/USART/I2C (aktif olarak geliştiriliyor), **Projects** ise kurs alıştırmalarından bağımsız, kazanılan becerileri birleştiren kendi projelerim.
+Repo dört bölümden oluşuyor: **Course 1** bare-metal embedded C (tamamlandı, 11 alıştırma), **Course 2** ARM Cortex-M işlemci mimarisi (bellek haritası bölümünde duraklatıldı), **Driver Development** kendi sürücü kütüphanem — GPIO/EXTI/SPI/USART/I2C (aktif olarak geliştiriliyor), **Projects** ise kurs alıştırmalarından bağımsız, kazanılan becerileri birleştiren kendi projelerim.
 
 Her alıştırma klasörü kendi README dosyasıyla birlikte, yaklaşımı açıklayarak duruyor.
