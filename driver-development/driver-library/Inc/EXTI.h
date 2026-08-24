@@ -19,6 +19,8 @@
 // Reference manual de olan tüm portlar benim kartımda olmadığından hepsini yapmadım.
 
 
+
+//@def_group EXTI_Line_Values
 #define EXTI_LineSource_0       ((uint8_t) (0x0))  // Pin numaraları aslında
 #define EXTI_LineSource_1       ((uint8_t) (0x1))
 #define EXTI_LineSource_2       ((uint8_t) (0x2))
@@ -38,7 +40,36 @@
 
 
 
+
+//@def_group EXTI_TriggerModes
+#define EXTI_Trigger_Rising_Offset  (0x08U)
+#define EXTI_Trigger_Fallen_Offset  (0x0CU)
+#define EXTI_Trigger_RF_Offset  	(0x10U)
+
+
+//@def_group EXTI_Modes
+#define EXTI_Mode_Interrupt (0x00U)
+#define EXTI_Mode_Event     (0x04U)
+
+
+
+
+
+
+typedef struct
+{
+	FunctionalState_t EXTI_LineCMD     ;    //Hat aktif mi deaktif mi
+	uint8_t           EXTI_LineNumber  ;    //Line numarası ---> @def_group EXTI_Line_Values a göre yazdım. Buna göre user kodu yazılmalıdır.
+	uint8_t           TriggerMode      ;    //Yükselen kenar mı alçalan kenar mı? @def_group EXTI_TriggerModes a göre yazdım. Buna göre user kodu yazılmalıdır.
+	uint8_t  		  EXTI_Mode		   ;    //Event mod mu interrupt mod mu ? @def group EXTI_Modes
+
+}EXTI_InitTypedef_t;
+
+
+
 void EXTI_LineConfig(uint8_t portSource , uint8_t EXTI_lineSource );
+
+void EXTI_Init(EXTI_InitTypedef_t *EXTI_InitStruct);
 
 
 

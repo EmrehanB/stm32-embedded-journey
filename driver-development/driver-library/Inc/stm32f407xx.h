@@ -8,6 +8,31 @@
 #define __IO volatile
 
 
+
+
+#define NVIC_ISER0 (uint32_t*) (0xE000E100)
+
+#define NVIC_ISER1 (uint32_t*) (0xE000E104)
+
+#define NVIC_ISER2 (uint32_t*) (0xE000E108)
+
+#define NVIC_ISER3 (uint32_t*) (0xE000E10C)
+
+#define NVIC_ISER4 (uint32_t*) (0xE000E110)
+
+#define NVIC_ISER5 (uint32_t*) (0xE000E114)
+
+#define NVIC_ISER6 (uint32_t*) (0xE000E118)
+
+#define NVIC_ISER7 (uint32_t*) (0xE000E11C)
+
+
+
+
+
+
+
+
 #define SET_BIT(REG,BIT)       ( (REG) |=  (BIT) )
 
 #define CLEAR_BIT(REG,BIT)     ( (REG) &= ~(BIT) )
@@ -15,6 +40,14 @@
 #define READ_BIT(REG,BIT)      ( (REG)  &  (BIT) )
 
 #define UNUSED(x)              (void)x  //Kullanmama uyarısı vermesin diye tanımladım.
+
+
+typedef enum{  //Makro tanımlaması gibi de düşünülebilir.
+
+	DISABLE  = 0x0U,
+ 	ENABLE = !DISABLE
+
+}FunctionalState_t;
 
 
 
@@ -253,6 +286,7 @@ typedef struct{
 #define RCC_APB2ENR_SYSCFG_POSITION   (14U)
 #define RCC_APB2ENR_SYSCFG_MASK    	  (0x1 << RCC_APB2ENR_SYSCFG_POSITION  )
 #define RCC_APB2ENR_SYSCFG            RCC_APB2ENR_SYSCFG_MASK
+
 
 
 
