@@ -13,7 +13,7 @@ This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, 
 | [`stm32f407xx.h`](driver-library/Inc/stm32f407xx.h) | Working | Base addresses, register structs (GPIO, RCC, SYSCFG, EXTI), peripheral pointers, bit definitions |
 | [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports and SYSCFG |
 | [`GPIO`](driver-library/Inc/GPIO.h) | In progress | Init, read, write, toggle, lock — alternate function (AFR) not yet implemented |
-| [`EXTI`](driver-library/Inc/EXTI.h) | In progress | SYSCFG line routing done — trigger selection, masking and NVIC setup pending |
+| [`EXTI`](driver-library/Inc/EXTI.h) | In progress | SYSCFG line routing, mask and edge configuration — NVIC setup and IRQ handlers pending |
 | `SPI` | Planned | — |
 | `USART` | Planned | — |
 | `I2C` | Planned | — |
@@ -45,7 +45,8 @@ driver-development/
 │
 ├── driver-projects/         # applications built on top of the library
 │   ├── 01-four-led-on/
-│   └── 02-button-controlled-led/
+│   ├── 02-button-controlled-led/
+│   └── 03-exti-configuration/
 │
 └── README.md
 ```
@@ -56,34 +57,38 @@ The repository-level [`projects/`](../projects) directory is separate — it hol
 
 ## Usage
 
-Driving the green LED on PD12 of the Discovery board:
+Driving an LED:
 
 ```c
 #include "stm32f407xx.h"
 
-int main(void)
-{
-    RCC_GPIOD_CLK_ENABLE();
+RCC_GPIOD_CLK_ENABLE();
 
-    GPIO_InitTtypedef cfg = {0};
-    cfg.pinNumber = GPIO_PIN_12;
-    cfg.Mode      = GPIO_MODE_OUTPUT;
-    cfg.Otype     = GPIO_OTYPE_PP;
-    cfg.Speed     = GPIO_SPEED_LOW;
-    cfg.PuPd      = GPIO_PUPD_NOPULL;
-    GPIO_Init(GPIOD, &cfg);
+GPIO_InitTtypedef cfg = {0};
+cfg.pinNumber = GPIO_PIN_12;
+cfg.Mode      = GPIO_MODE_OUTPUT;
+cfg.Otype     = GPIO_OTYPE_PP;
+cfg.Speed     = GPIO_SPEED_LOW;
+cfg.PuPd      = GPIO_PUPD_NOPULL;
+GPIO_Init(GPIOD, &cfg);
 
-    GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_Pin_Set);
-
-    for (;;);
-}
+GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_Pin_Set);
 ```
 
-Routing PA0 to EXTI line 0:
+Routing a pin to an EXTI line and configuring the trigger:
 
 ```c
 RCC_SYSCFG_CLK_ENABLE();
-EXTI_LineConfig(EXTI_PortSource_GPIOA, EXTI_LineSource_0);
+RCC_GPIOC_CLK_ENABLE();
+
+EXTI_InitTypedef_t exti = {0};
+exti.EXTI_LineCMD    = ENABLE;
+exti.EXTI_LineNumber = EXTI_LineSource_10;
+exti.EXTI_Mode       = EXTI_Mode_Interrupt;
+exti.TriggerMode     = EXTI_Trigger_Rising_Offset;
+
+EXTI_LineConfig(EXTI_PortSource_GPIOC, EXTI_LineSource_10);
+EXTI_Init(&exti);
 ```
 
 ## Design Notes
@@ -100,13 +105,17 @@ The library is organised in layers, and the layer boundary is the point of the e
 
 Decisions worth recording:
 
-- **Register structs include explicit `RESERVED` members.** The compiler lays struct members out contiguously, so gaps in the peripheral memory map must be padded or every member after the gap resolves to the wrong address. RCC has six such gaps; SYSCFG has one.
+- **Register structs include explicit `RESERVED` members.** The compiler lays struct members out contiguously, so gaps in the peripheral memory map must be padded or every member after the gap resolves to the wrong address. RCC has six such gaps; SYSCFG has one, between `EXTICR[4]` and `CMPCR`.
 
 - **Clock-enable macros read the register back after writing it.** On this bus architecture the write may not have taken effect by the time the next instruction accesses the peripheral; the read-back forces completion. The value is discarded through `UNUSED()`.
 
 - **`GPIO_WritePin` uses BSRR, not ODR.** Writing to BSRR is a single, indivisible store: it expresses the change as a delta rather than an absolute value, so no read-modify-write is needed and no interrupt can corrupt it.
 
 - **Bit-field width drives the shift arithmetic.** OTYPER gives each pin 1 bit (shift by `position`), MODER/OSPEEDR/PUPDR give 2 bits (shift by `2 * position`), and SYSCFG's EXTICR gives 4 bits spread across four registers (index by `line >> 2`, shift by `(line & 3) * 4`). Same pattern, different partitioning.
+
+- **EXTI has no clock enable bit of its own.** It is part of the processor's interrupt fabric rather than a vendor peripheral, so `RCC_APB2ENR` has no EXTI entry. What does need enabling is SYSCFG — because the `EXTICR` registers that route a port to a line belong to SYSCFG — and the clock of the GPIO port being watched.
+
+- **`EXTI_Mode` and `TriggerMode` hold register offsets, not enum-like codes.** `EXTI_Mode_Interrupt` is `0x00` (IMR) and `EXTI_Mode_Event` is `0x04` (EMR); the trigger values are the offsets of RTSR, FTSR and a sentinel for "both". The driver adds the offset to the EXTI base address and writes through the resulting pointer. This mirrors ST's older SPL style; the alternative — plain `if`/`else` on `EXTI->IMR` and `EXTI->EMR` — avoids offset arithmetic entirely but was not used here in order to follow the course's structure.
 
 ## References
 
@@ -126,6 +135,6 @@ Erhan Konak'ın *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* Ud
 
 Kütüphane katmanlı bir yapıda: `stm32f407xx.h` donanımı tarif eder, `GPIO.h` / `RCC.h` / `EXTI.h` kullanıcıya sunulan arayüzü tanımlar, `.c` dosyaları bu arayüzü register seviyesinde gerçekler, uygulama kodu ise register bilmez.
 
-Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi yazıldı; kenar seçimi, maskeleme ve NVIC yapılandırması bekliyor. SPI, USART ve I2C kurs ilerledikçe eklenecek.
+Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması yazıldı; NVIC (Nested Vectored Interrupt Controller) ayarı ve kesme işleyicileri bekliyor. SPI, USART ve I2C kurs ilerledikçe eklenecek.
 
 `driver-projects/` klasörü, bu kütüphaneyi kullanan küçük uygulamalar için ayrıldı. Repository kökündeki `projects/` klasörü ise kütüphaneden bağımsız genel projeler için kalmaya devam ediyor.
