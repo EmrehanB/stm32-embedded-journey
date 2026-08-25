@@ -12,20 +12,21 @@
 
 #define NVIC_ISER0 (uint32_t*) (0xE000E100)
 
-#define NVIC_ISER1 (uint32_t*) (0xE000E104)
 
-#define NVIC_ISER2 (uint32_t*) (0xE000E108)
 
-#define NVIC_ISER3 (uint32_t*) (0xE000E10C)
 
-#define NVIC_ISER4 (uint32_t*) (0xE000E110)
 
-#define NVIC_ISER5 (uint32_t*) (0xE000E114)
+//IRQ Numaraları = Vektör tablosu
+typedef enum{
 
-#define NVIC_ISER6 (uint32_t*) (0xE000E118)
+	EXTI0_IRQNumber = 6 ,
+	EXTI1_IRQNumber = 7 ,
+	EXTI2_IRQNumber = 8 ,
+	EXTI3_IRQNumber = 9
 
-#define NVIC_ISER7 (uint32_t*) (0xE000E11C)
 
+
+}IRQNumber_TypeDef_t;
 
 
 

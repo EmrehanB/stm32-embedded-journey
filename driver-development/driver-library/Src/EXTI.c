@@ -58,12 +58,6 @@ void EXTI_Init(EXTI_InitTypedef_t *EXTI_InitStruct){
 
 
 
-
-
-
-
-
-
 //syscfg için ilgili portu konfigüre eder. // Parametreler için EXTI.h içindeki @def_group Port Values kullanılır.
 void EXTI_LineConfig(uint8_t portSource , uint8_t EXTI_lineSource ){
 
@@ -74,6 +68,23 @@ void EXTI_LineConfig(uint8_t portSource , uint8_t EXTI_lineSource ){
 	tempVal |= (portSource) << ((EXTI_lineSource & 0x3U )*4);   //Yukarıdaki gibi doğru bit numarasını bulma , oraya kaydırma ve set
 
 	SYSCFG->EXTI_CR[EXTI_lineSource>>2U]=tempVal;
+
+}
+
+
+
+
+
+//NVIC üzerinde konfigürasyon yapmak için kullanılır:
+void NVIC_EnableInterrupt(IRQNumber_TypeDef_t IRQ_Number){
+
+	uint32_t tempVal=0;
+	tempVal  = *(NVIC_ISER0 + (IRQ_Number>>5U)) ;  // Hangi NVIC_ISR registerını arıyoruz .
+	tempVal &= ~(0x1U << (IRQ_Number & 0x1FU))  ;  // ilgili bit temizlendi
+	tempVal |=  (0x1U << (IRQ_Number & 0x1FU))  ;  // ilgili bit set edildi.
+	*(NVIC_ISER0 + (IRQ_Number>>5U))=tempVal;
+
+
 
 }
 

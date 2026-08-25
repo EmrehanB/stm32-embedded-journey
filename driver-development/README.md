@@ -13,7 +13,7 @@ This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, 
 | [`stm32f407xx.h`](driver-library/Inc/stm32f407xx.h) | Working | Base addresses, register structs (GPIO, RCC, SYSCFG, EXTI), peripheral pointers, bit definitions |
 | [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports and SYSCFG |
 | [`GPIO`](driver-library/Inc/GPIO.h) | In progress | Init, read, write, toggle, lock — alternate function (AFR) not yet implemented |
-| [`EXTI`](driver-library/Inc/EXTI.h) | In progress | SYSCFG line routing, mask and edge configuration — NVIC setup and IRQ handlers pending |
+| [`EXTI`](driver-library/Inc/EXTI.h) | Working | SYSCFG line routing, mask and edge configuration, NVIC interrupt enable |
 | `SPI` | Planned | — |
 | `USART` | Planned | — |
 | `I2C` | Planned | — |
@@ -46,7 +46,8 @@ driver-development/
 ├── driver-projects/         # applications built on top of the library
 │   ├── 01-four-led-on/
 │   ├── 02-button-controlled-led/
-│   └── 03-exti-configuration/
+│   ├── 03-exti-configuration/
+│   └── 04-button-interrupt/
 │
 └── README.md
 ```
@@ -75,20 +76,33 @@ GPIO_Init(GPIOD, &cfg);
 GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_Pin_Set);
 ```
 
-Routing a pin to an EXTI line and configuring the trigger:
+Setting up a rising-edge interrupt on PA0:
 
 ```c
 RCC_SYSCFG_CLK_ENABLE();
-RCC_GPIOC_CLK_ENABLE();
+RCC_GPIOA_CLK_ENABLE();
 
 EXTI_InitTypedef_t exti = {0};
 exti.EXTI_LineCMD    = ENABLE;
-exti.EXTI_LineNumber = EXTI_LineSource_10;
+exti.EXTI_LineNumber = EXTI_LineSource_0;
 exti.EXTI_Mode       = EXTI_Mode_Interrupt;
 exti.TriggerMode     = EXTI_Trigger_Rising_Offset;
 
-EXTI_LineConfig(EXTI_PortSource_GPIOC, EXTI_LineSource_10);
+EXTI_LineConfig(EXTI_PortSource_GPIOA, EXTI_LineSource_0);
 EXTI_Init(&exti);
+NVIC_EnableInterrupt(EXTI0_IRQNumber);
+```
+
+The handler is a plain C function whose name must match the startup file's vector table entry:
+
+```c
+void EXTI0_IRQHandler(void)
+{
+    if (EXTI->PR & 0x1U) {
+        EXTI->PR = 0x1U;          // rc_w1: writing 1 clears
+        GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_Pin_Set);
+    }
+}
 ```
 
 ## Design Notes
@@ -115,6 +129,10 @@ Decisions worth recording:
 
 - **EXTI has no clock enable bit of its own.** It is part of the processor's interrupt fabric rather than a vendor peripheral, so `RCC_APB2ENR` has no EXTI entry. What does need enabling is SYSCFG — because the `EXTICR` registers that route a port to a line belong to SYSCFG — and the clock of the GPIO port being watched.
 
+- **An interrupt needs two independent enables.** `EXTI->IMR` releases the line from the EXTI block; `NVIC->ISER` allows the IRQ to reach the core. Setting only one produces no interrupt and no diagnostic.
+
+- **`EXTI->PR` and `NVIC->ISER` are written directly, not read-modify-write.** Both are write-1-to-act registers: bits written as 1 take effect, bits written as 0 are ignored. A read adds nothing and widens the window for losing a concurrent event — the same argument that favours BSRR over ODR.
+
 - **`EXTI_Mode` and `TriggerMode` hold register offsets, not enum-like codes.** `EXTI_Mode_Interrupt` is `0x00` (IMR) and `EXTI_Mode_Event` is `0x04` (EMR); the trigger values are the offsets of RTSR, FTSR and a sentinel for "both". The driver adds the offset to the EXTI base address and writes through the resulting pointer. This mirrors ST's older SPL style; the alternative — plain `if`/`else` on `EXTI->IMR` and `EXTI->EMR` — avoids offset arithmetic entirely but was not used here in order to follow the course's structure.
 
 ## References
@@ -135,6 +153,6 @@ Erhan Konak'ın *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* Ud
 
 Kütüphane katmanlı bir yapıda: `stm32f407xx.h` donanımı tarif eder, `GPIO.h` / `RCC.h` / `EXTI.h` kullanıcıya sunulan arayüzü tanımlar, `.c` dosyaları bu arayüzü register seviyesinde gerçekler, uygulama kodu ise register bilmez.
 
-Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması yazıldı; NVIC (Nested Vectored Interrupt Controller) ayarı ve kesme işleyicileri bekliyor. SPI, USART ve I2C kurs ilerledikçe eklenecek.
+Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme tamamlandı; kesme işleyicileri uygulama tarafında yazılıyor. SPI, USART ve I2C kurs ilerledikçe eklenecek.
 
 `driver-projects/` klasörü, bu kütüphaneyi kullanan küçük uygulamalar için ayrıldı. Repository kökündeki `projects/` klasörü ise kütüphaneden bağımsız genel projeler için kalmaya devam ediyor.
