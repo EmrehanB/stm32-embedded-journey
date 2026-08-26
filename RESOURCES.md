@@ -40,7 +40,7 @@ The courses, official documentation, and articles/resources I benefited from whi
 
 ### Haberleşme Protokolleri
 
-- [Serial Communication](https://learn.sparkfun.com/tutorials/serial-communication) — SparkFun. Seri ve paralel aktarım farkı, senkron ve asenkron ayrımı, baud rate, çerçeveleme. SPI'dan önce okunması gereken temel
+- [Serial Communication](https://learn.sparkfun.com/tutorials/serial-communication) — SparkFun. Seri ve paralel aktarım farkı, senkron ve asenkron ayrımı, baud rate, çerçeveleme. 
 - [Serial Peripheral Interface (SPI)](https://learn.sparkfun.com/tutorials/serial-peripheral-interface-spi/all) — SparkFun. MOSI/MISO/SCK/SS hatları, kaydırma yazmacı modeli, CPOL ve CPHA modları, çoklu slave bağlantısı
 - [Shift Registers](https://learn.sparkfun.com/tutorials/shift-registers) — SparkFun. Seri-paralel dönüşüm ve kaydırma yazmacı mantığı — SPI'ın çalışma prensibinin donanımsal temeli
 
