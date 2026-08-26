@@ -248,6 +248,24 @@ typedef struct{
 
 
 
+typedef struct{
+
+	__IO uint32_t CR1	  ; 	//Control 1 register									adres offset = 0x00
+	__IO uint32_t CR2	  ; 	//Control 2 register									adres offset = 0x04
+	__IO uint32_t SR 	  ; 	//Status register										adres offset = 0x08
+	__IO uint32_t DR 	  ; 	//Data register											adres offset = 0x0C
+	__IO uint32_t CRCPR   ; 	//CRC polynomial register								adres offset = 0x10
+	__IO uint32_t RXCRCR  ; 	//RX CRC register										adres offset = 0x14
+	__IO uint32_t TXCRCR  ;	 	//TX CRC register									    adres offset = 0x18
+	__IO uint32_t I2SCFGR ; 	//SPI_I2S configuration register						adres offset = 0x1C
+	__IO uint32_t I2SPR   ; 	//SPI_I2S prescaler register							adres offset = 0x20
+
+}SPI_TypeDef_t;
+
+
+
+
+
 #define GPIOA 	( (GPIO_TypeDef_t*) GPIOA_BASE_ADDR )
 #define GPIOB 	( (GPIO_TypeDef_t*) GPIOB_BASE_ADDR )
 #define GPIOC 	( (GPIO_TypeDef_t*) GPIOC_BASE_ADDR )
@@ -259,6 +277,11 @@ typedef struct{
 #define SYSCFG 	( (SYSCFG_typeDef_t *) SYSCFG_BASE_ADDR )
 
 #define EXTI    ( (EXTI_typeDef_t *) EXTI_BASE_ADDR)
+
+#define SPI1    ( (SPI_TypeDef_t *) SPI1_BASE_ADDR)
+#define SPI2    ( (SPI_TypeDef_t *) SPI2_BASE_ADDR)
+#define SPI3    ( (SPI_TypeDef_t *) SPI3_BASE_ADDR)
+#define SPI4    ( (SPI_TypeDef_t *) SPI4_BASE_ADDR)
 
 
 //Bit tanımlamaları (bit definitions)
@@ -284,6 +307,7 @@ typedef struct{
 
 
 
+
 #define RCC_APB2ENR_SYSCFG_POSITION   (14U)
 #define RCC_APB2ENR_SYSCFG_MASK    	  (0x1 << RCC_APB2ENR_SYSCFG_POSITION  )
 #define RCC_APB2ENR_SYSCFG            RCC_APB2ENR_SYSCFG_MASK
@@ -291,6 +315,27 @@ typedef struct{
 
 
 
+
+#define RCC_APB2ENR_SYSCFG_POSITION   (14U)                                     // RCC APB2ENRegister SYSCFGEN bit konumu
+#define RCC_APB2ENR_SYSCFG_MASK       (0x1 << RCC_APB2ENR_SYSCFG_POSITION )     // RCC APB2ENRegister SYSCFGEN bit mask (0x01<<14)
+#define RCC_APB2ENR_SYSCFG            RCC_APB2ENR_SYSCFG_MASK                   // RCC APB2ENRegister SYSCFGEN macro
+
+
+#define RCC_APB2ENR_SPI1_POSITION     (12U)                                     // RCC APB2ENRegister SPI1EN bit konumu
+#define RCC_APB2ENR_SPI1_MASK         (0x1 << RCC_APB2ENR_SPI1_POSITION )       // RCC APB2ENRegister SPI1EN bit mask (0x01<<12)
+#define RCC_APB2ENR_SPI1              RCC_APB2ENR_SPI1_MASK                     // RCC APB2ENRegister SPI1EN macro
+
+#define RCC_APB1ENR_SPI2_POSITION     (14U)                                     // RCC APB1ENRegister SPI2EN bit konumu
+#define RCC_APB1ENR_SPI2_MASK         (0x1 << RCC_APB1ENR_SPI2_POSITION)        // RCC APB1ENRegister SPI2EN bit mask (0x01<<14)
+#define RCC_APB1ENR_SPI2              RCC_APB1ENR_SPI2_MASK                     // RCC APB1ENRegister SPI2EN macro
+
+#define RCC_APB1ENR_SPI3_POSITION     (15U)                                     // RCC APB1ENRegister SPI3EN bit konumu
+#define RCC_APB1ENR_SPI3_MASK         (0x1 << RCC_APB1ENR_SPI3_POSITION)        // RCC APB1ENRegister SPI3EN bit mask (0x01<<15)
+#define RCC_APB1ENR_SPI3              RCC_APB1ENR_SPI3_MASK                     // RCC APB1ENRegister SPI3EN macro
+
+#define RCC_APB2ENR_SPI4_POSITION     (13U)                                     // RCC APB2ENRegister SPI4EN bit konumu
+#define RCC_APB2ENR_SPI4_MASK         (0x1 << RCC_APB2ENR_SPI4_POSITION)        // RCC APB2ENRegister SPI4EN bit mask (0x01<<13)
+#define RCC_APB2ENR_SPI4              RCC_APB2ENR_SPI4_MASK                     // RCC APB2ENRegister SPI4EN macro
 
 
 

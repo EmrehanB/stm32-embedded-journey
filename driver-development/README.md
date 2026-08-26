@@ -10,11 +10,11 @@ This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, 
 
 | Component | Status | Scope |
 |---|---|---|
-| [`stm32f407xx.h`](driver-library/Inc/stm32f407xx.h) | Working | Base addresses, register structs (GPIO, RCC, SYSCFG, EXTI), peripheral pointers, bit definitions |
-| [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports and SYSCFG |
+| [`stm32f407xx.h`](driver-library/Inc/stm32f407xx.h) | Working | Base addresses, register structs (GPIO, RCC, SYSCFG, EXTI, SPI), peripheral pointers, bit definitions |
+| [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports, SYSCFG and SPI1–SPI4 |
 | [`GPIO`](driver-library/Inc/GPIO.h) | In progress | Init, read, write, toggle, lock — alternate function (AFR) not yet implemented |
 | [`EXTI`](driver-library/Inc/EXTI.h) | Working | SYSCFG line routing, mask and edge configuration, NVIC interrupt enable |
-| `SPI` | Planned | — |
+| `SPI` | In progress | Register struct, peripheral pointers and clock enable done — driver functions pending |
 | `USART` | Planned | — |
 | `I2C` | Planned | — |
 
@@ -133,6 +133,8 @@ Decisions worth recording:
 
 - **`EXTI->PR` and `NVIC->ISER` are written directly, not read-modify-write.** Both are write-1-to-act registers: bits written as 1 take effect, bits written as 0 are ignored. A read adds nothing and widens the window for losing a concurrent event — the same argument that favours BSRR over ODR.
 
+- **A peripheral's bus determines which clock-enable register it uses.** GPIO sits on AHB1 (`AHB1ENR`), SYSCFG on APB2 (`APB2ENR`). SPI is split: SPI1 and SPI4 are on APB2 and run at up to 84 MHz, while SPI2 and SPI3 are on APB1 at 42 MHz. The first question when adding any peripheral is which bus it hangs off.
+
 - **`EXTI_Mode` and `TriggerMode` hold register offsets, not enum-like codes.** `EXTI_Mode_Interrupt` is `0x00` (IMR) and `EXTI_Mode_Event` is `0x04` (EMR); the trigger values are the offsets of RTSR, FTSR and a sentinel for "both". The driver adds the offset to the EXTI base address and writes through the resulting pointer. This mirrors ST's older SPL style; the alternative — plain `if`/`else` on `EXTI->IMR` and `EXTI->EMR` — avoids offset arithmetic entirely but was not used here in order to follow the course's structure.
 
 ## References
@@ -153,6 +155,6 @@ Erhan Konak'ın *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* Ud
 
 Kütüphane katmanlı bir yapıda: `stm32f407xx.h` donanımı tarif eder, `GPIO.h` / `RCC.h` / `EXTI.h` kullanıcıya sunulan arayüzü tanımlar, `.c` dosyaları bu arayüzü register seviyesinde gerçekler, uygulama kodu ise register bilmez.
 
-Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme tamamlandı; kesme işleyicileri uygulama tarafında yazılıyor. SPI, USART ve I2C kurs ilerledikçe eklenecek.
+Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme tamamlandı; kesme işleyicileri uygulama tarafında yazılıyor. SPI için register yapısı, çevre birimi işaretçileri ve clock enable makroları eklendi; sürücü fonksiyonları bekliyor. USART ve I2C kurs ilerledikçe gelecek.
 
 `driver-projects/` klasörü, bu kütüphaneyi kullanan küçük uygulamalar için ayrıldı. Repository kökündeki `projects/` klasörü ise kütüphaneden bağımsız genel projeler için kalmaya devam ediyor.
