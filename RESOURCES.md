@@ -23,6 +23,7 @@ The courses, official documentation, and articles/resources I benefited from whi
 - [What are Header Files in C Programming?](https://usemynotes.com/what-are-header-files-in-c/) — Alimam Miya, UseMyNotes
 - [The Advanced Microcontroller Bus Architecture: An Introduction](https://www.allaboutcircuits.com/technical-articles/introduction-to-the-advanced-microcontroller-bus-architecture/) — Stephen St. Michael, All About Circuits
 - [How do header and source files in C work?](https://stackoverflow.com/questions/5904530/how-do-header-and-source-files-in-c-work) — Stack Overflow
+- [Serial Peripheral Interface (SPI) — SparkFun](https://learn.sparkfun.com/tutorials/serial-peripheral-interface-spi/all) — SPI protokolü: MOSI/MISO/SCK/SS hatları, kaydırma yazmacı modeli, CPOL ve CPHA modları, çoklu slave bağlantısı.
 
 ---
 
