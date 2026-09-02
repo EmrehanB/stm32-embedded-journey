@@ -308,17 +308,14 @@ typedef struct{
 
 
 
-#define RCC_APB2ENR_SYSCFG_POSITION   (14U)
-#define RCC_APB2ENR_SYSCFG_MASK    	  (0x1 << RCC_APB2ENR_SYSCFG_POSITION  )
-#define RCC_APB2ENR_SYSCFG            RCC_APB2ENR_SYSCFG_MASK
-
-
-
-
 
 #define RCC_APB2ENR_SYSCFG_POSITION   (14U)                                     // RCC APB2ENRegister SYSCFGEN bit konumu
 #define RCC_APB2ENR_SYSCFG_MASK       (0x1 << RCC_APB2ENR_SYSCFG_POSITION )     // RCC APB2ENRegister SYSCFGEN bit mask (0x01<<14)
 #define RCC_APB2ENR_SYSCFG            RCC_APB2ENR_SYSCFG_MASK                   // RCC APB2ENRegister SYSCFGEN macro
+
+
+
+
 
 
 #define RCC_APB2ENR_SPI1_POSITION     (12U)                                     // RCC APB2ENRegister SPI1EN bit konumu
@@ -345,5 +342,6 @@ typedef struct{
 #include "RCC.h"
 #include "GPIO.h"
 #include "EXTI.h"
+#include "SPI.h"
 
 #endif /* INC_STM32F407XX_H_ */

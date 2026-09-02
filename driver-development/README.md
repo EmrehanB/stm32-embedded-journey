@@ -14,7 +14,7 @@ This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, 
 | [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports, SYSCFG and SPI1–SPI4 |
 | [`GPIO`](driver-library/Inc/GPIO.h) | In progress | Init, read, write, toggle, lock — alternate function (AFR) not yet implemented |
 | [`EXTI`](driver-library/Inc/EXTI.h) | Working | SYSCFG line routing, mask and edge configuration, NVIC interrupt enable |
-| `SPI` | In progress | Register struct, peripheral pointers and clock enable done — driver functions pending |
+| [`SPI`](driver-library/Inc/SPI.h) | In progress | Register struct, clock enable, configuration definitions and `SPI_Init` — transmit/receive functions pending |
 | `USART` | Planned | — |
 | `I2C` | Planned | — |
 
@@ -37,11 +37,13 @@ driver-development/
 │   │   ├── stm32f407xx.h    # device header — hardware description
 │   │   ├── RCC.h            # clock control interface
 │   │   ├── GPIO.h           # GPIO interface
-│   │   └── EXTI.h           # external interrupt interface
+│   │   ├── EXTI.h           # external interrupt interface
+│   │   └── SPI.h            # SPI interface
 │   └── Src/
 │       ├── RCC.c
 │       ├── GPIO.c
-│       └── EXTI.c
+│       ├── EXTI.c
+│       └── SPI.c
 │
 ├── driver-projects/         # applications built on top of the library
 │   ├── 01-four-led-on/
@@ -111,9 +113,9 @@ The library is organised in layers, and the layer boundary is the point of the e
 
 **1. Hardware description** — `stm32f407xx.h` answers *how is the silicon laid out?* Base addresses, register maps as structs, bit positions and masks. Nothing here knows what a driver is.
 
-**2. Interface** — `RCC.h`, `GPIO.h`, `EXTI.h` answer *what does a driver user get to call?* Symbolic pin masks, state enums, function prototypes.
+**2. Interface** — `RCC.h`, `GPIO.h`, `EXTI.h`, `SPI.h` answer *what does a driver user get to call?* Symbolic pin masks, state enums, function prototypes.
 
-**3. Implementation** — `RCC.c`, `GPIO.c`, `EXTI.c` answer *how is that interface realised in registers?*
+**3. Implementation** — `RCC.c`, `GPIO.c`, `EXTI.c`, `SPI.c` answer *how is that interface realised in registers?*
 
 **4. Application** — code under `driver-projects/`. It should not know GPIOD's base address, BSRR's offset, or which half of BSRR resets a pin.
 
@@ -132,6 +134,10 @@ Decisions worth recording:
 - **An interrupt needs two independent enables.** `EXTI->IMR` releases the line from the EXTI block; `NVIC->ISER` allows the IRQ to reach the core. Setting only one produces no interrupt and no diagnostic.
 
 - **`EXTI->PR` and `NVIC->ISER` are written directly, not read-modify-write.** Both are write-1-to-act registers: bits written as 1 take effect, bits written as 0 are ignored. A read adds nothing and widens the window for losing a concurrent event — the same argument that favours BSRR over ODR.
+
+- **SPI configuration values are stored pre-shifted.** `SPI_BAUDRATE_DIV16` is `0x18`, not `3` — the value already sits at bit 3 where `CR1` expects it. This is ST's SPL convention and it keeps `SPI_Init` free of per-field shift arithmetic, since every `CR1` field has a fixed position. GPIO could not do this: there the shift depends on the pin number and is not constant.
+
+- **A two-level handle separates the instance from the configuration.** `SPI_HandleTypeDef_t` holds a pointer to the peripheral (`SPI1`–`SPI4`) alongside the configuration struct, so one driver call carries both *which* SPI and *how* it should behave.
 
 - **A peripheral's bus determines which clock-enable register it uses.** GPIO sits on AHB1 (`AHB1ENR`), SYSCFG on APB2 (`APB2ENR`). SPI is split: SPI1 and SPI4 are on APB2 and run at up to 84 MHz, while SPI2 and SPI3 are on APB1 at 42 MHz. The first question when adding any peripheral is which bus it hangs off.
 
@@ -155,6 +161,6 @@ Erhan Konak'ın *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* Ud
 
 Kütüphane katmanlı bir yapıda: `stm32f407xx.h` donanımı tarif eder, `GPIO.h` / `RCC.h` / `EXTI.h` kullanıcıya sunulan arayüzü tanımlar, `.c` dosyaları bu arayüzü register seviyesinde gerçekler, uygulama kodu ise register bilmez.
 
-Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme tamamlandı; kesme işleyicileri uygulama tarafında yazılıyor. SPI için register yapısı, çevre birimi işaretçileri ve clock enable makroları eklendi; sürücü fonksiyonları bekliyor. USART ve I2C kurs ilerledikçe gelecek.
+Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme tamamlandı; kesme işleyicileri uygulama tarafında yazılıyor. SPI (Serial Peripheral Interface) tarafında register yapısı, clock enable makroları, konfigürasyon tanımları ve `SPI_Init` tamamlandı; veri gönderme/alma fonksiyonları bekliyor. USART ve I2C kurs ilerledikçe gelecek.
 
 `driver-projects/` klasörü, bu kütüphaneyi kullanan küçük uygulamalar için ayrıldı. Repository kökündeki `projects/` klasörü ise kütüphaneden bağımsız genel projeler için kalmaya devam ediyor.

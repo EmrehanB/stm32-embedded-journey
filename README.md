@@ -68,7 +68,7 @@ Split into two layers: `driver-library/` holds the drivers themselves, `driver-p
 | `RCC` — peripheral clock enable/disable | Working |
 | `GPIO` — init, read, write, toggle, lock | In progress |
 | `EXTI` — line routing, edge config, NVIC enable | Working |
-| `SPI` — register struct, clock enable | In progress |
+| `SPI` — register struct, clock enable, init | In progress |
 | `USART` · `I2C` | Planned |
 Details: [driver-development](./driver-development)
 
