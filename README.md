@@ -52,7 +52,7 @@ Reference: [Cortex-M4 Technical Reference Manual](https://developer.arm.com/docu
 | 01 | Inline asm: add in memory | Inline assembly, LDR/STR, load-store architecture | [01-inline-asm-add](./course-2-cortex-m/01-inline-asm-add) |
 | 02 | Inline asm: constraints & MRS | Constraint strings (r/=r/i), reading CONTROL with MRS | [02-inline-asm-constraints](./course-2-cortex-m/02-inline-asm-constraints) |
 
-Currently paused at the memory map and bus interface section; resumes after the driver development track.
+Currently paused , resumes after the driver development track.
 
 ---
 
