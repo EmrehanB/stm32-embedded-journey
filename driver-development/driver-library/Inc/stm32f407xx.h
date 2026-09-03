@@ -286,8 +286,6 @@ typedef struct{
 
 //Bit tanımlamaları (bit definitions)
 
-
-
 #define RCC_AHB1ENR_GPIOAEN_POSITION  (0U)                                      // RCC AHB1ENRegister GPIOAEN bit konumu
 #define RCC_AHB1ENR_GPIOAEN_MASK      (0x1 << RCC_AHB1ENR_GPIOAEN_POSITION )    // RCC AHB1ENRegister GPIOAEN bit mask (0x01<<1)
 #define RCC_AHB1ENR_GPIOAEN           RCC_AHB1ENR_GPIOAEN_MASK                  // RCC AHB1ENRegister GPIOAEN macro
@@ -334,6 +332,12 @@ typedef struct{
 #define RCC_APB2ENR_SPI4_MASK         (0x1 << RCC_APB2ENR_SPI4_POSITION)        // RCC APB2ENRegister SPI4EN bit mask (0x01<<13)
 #define RCC_APB2ENR_SPI4              RCC_APB2ENR_SPI4_MASK                     // RCC APB2ENRegister SPI4EN macro
 
+
+
+//Flag tanımlamaları
+
+#define SPI_TxE_FLAG				  ( 0x1U << 1 )
+#define SPI_BSY_FLAG                  ( 0x1U << 7 )
 
 
 

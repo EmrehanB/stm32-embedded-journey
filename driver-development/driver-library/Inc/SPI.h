@@ -122,6 +122,15 @@
 
 #define SPI_SSM_ENABLE        (uint32_t)(0x300) // Hem 9. bit 1 hem 8. bit 1 olacak 0011 0000 0000  . Yukarıda anlatılan olaydan dolayı (MODF hatası).
 
+
+typedef enum{  //Flaglerim SR registerda
+
+	SPI_FLAG_RESET = 0x0U,
+	SPI_FLAG_SET   = !SPI_FLAG_RESET
+
+}SPI_FlagStatus_t;
+
+
 typedef struct{
 
 	uint32_t Mode		  ;    // @def_group SPI_ModeValues'e göre değerler atanacaktır. Master-Slave
@@ -146,6 +155,88 @@ typedef struct{               //kodun daha güzel gözükmesi açısından oluş
 
 void SPI_Init(SPI_HandleTypeDef_t *SPI_Handle);
 
+
+
+void SPI_PeriphCmd(SPI_HandleTypeDef_t *SPI_Handle , FunctionalState_t stateOfSPI);
+
+
+//polling metodu ile transmit (send) data yapacağız
+void SPI_TransmitData(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pData , uint16_t sizeOfData);
+// aşağıda veri gönderme presdürünün açıklaması var
+
+
+SPI_FlagStatus_t SPI_GetFlagStatus(SPI_HandleTypeDef_t *SPI_Handle , uint16_t SPI_Flag);
+
+
+/*
+ * SPI VERI GONDERME PROSEDURU  (RM0090, "Transmitting/Receiving data")
+ *
+ * ---- Uc bayrak (SPI_SR registerinda) ----
+ *
+ * TXE  (Transmit buffer Empty, bit 1)
+ *      1 -> gonderme tamponu bos, DR'ye yeni veri yazilabilir
+ *      0 -> tampon dolu; yazilirsa uzerine yazilir ve veri kaybolur
+ *      DR'ye yazmak bu bayragi temizler.
+ *
+ * RXNE (Receive buffer Not Empty, bit 0)
+ *      1 -> alma tamponunda okunmamis veri var
+ *      DR'yi okumak bu bayragi temizler.
+ *
+ * BSY  (Busy, bit 7)
+ *      1 -> SPI hala hat uzerinde is yapiyor
+ *      0 -> son bit de hattan cikti
+ *
+ *
+ * ---- Neden ayri bayraklar: cift tamponlama ----
+ *
+ *   Yazilim -> [TX tampon] -> [Kaydirma yazmaci] -> MOSI
+ *   Yazilim <- [RX tampon] <- [Kaydirma yazmaci] <- MISO
+ *
+ *   Kaydirma yazmaci hatti surerken tampona bir sonraki bayt konabilir. Boylece
+ *   bir bayt biter bitmez digeri baslar ve hat bos kalmaz.
+ *   TXE = 1 olmasi verinin HATTAN CIKTIGI anlamina GELMEZ -- sadece tamponun
+ *   bosaldigini soyler.
+ *
+ *
+ * ---- Adimlar ----
+ *
+ * 1) SPE = 1 yapilir (SPI_CR1).
+ *    Tum konfigurasyon (CPOL, CPHA, BaudRate, MSTR...) SPE = 0 iken yapilmis
+ *    olmalidir; SPE acikken bu bitleri degistirmek tanimsiz davranistir.
+ *
+ * 2) Ilk veri DR'ye yazilir. TXE zaten 1 oldugu icin beklemeye gerek yoktur.
+ *
+ * 3) Dongu: her veri icin
+ *       TXE = 1 olana kadar bekle  -> sonraki veriyi DR'ye yaz
+ *       RXNE = 1 olana kadar bekle -> gelen veriyi DR'den oku
+ *
+ *    SPI full duplex oldugu icin her gonderilen bayt karsiliginda bir bayt da
+ *    gelir. Okunmazsa RX tamponu tasar (OVR - overrun hatasi). Sadece gonderiyor
+ *    olsan bile gelen bayt okunup ATILMALIDIR.
+ *
+ *    Zamanlama: gonderme, almadan bir adim ondedir (boru hatti davranisi).
+ *
+ * 4) Dongu n-1 veriyi isler. Son gonderilen baytin karsiligi hala yoldadir:
+ *    RXNE = 1 beklenip son veri okunur.
+ *
+ * 5) Kapatmadan once IKI kontrol:
+ *       TXE = 1 bekle  -> tampon bosaldi
+ *       BSY = 0 bekle  -> son bit gercekten hattan cikti
+ *    Sonra SPE = 0 yapilabilir.
+ *
+ *    TXE tek basina YETMEZ: tampon bos olsa da kaydirma yazmacinda veri
+ *    olabilir. Beklemeden SPE = 0 yapilirsa son bayt yarim kalir, slave bozuk
+ *    veri alir ve senkronizasyon bozulur.
+ *
+ *
+ * ---- Uc uygulama seviyesi ----
+ *
+ *   Polling : while dongusuyle bayrak beklenir. Islemci baska is yapamaz.
+ *   Kesme   : SPI_CR2'deki TXEIE ve RXNEIE bitleri acilir; bayraklar kesme uretir.
+ *   DMA     : Islemci hic karismadan tum blok aktarilir.
+ *
+ *   Bu surucude polling kullaniliyor.
+ */
 
 
 

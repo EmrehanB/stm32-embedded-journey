@@ -14,7 +14,7 @@ This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, 
 | [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports, SYSCFG and SPI1–SPI4 |
 | [`GPIO`](driver-library/Inc/GPIO.h) | In progress | Init, read, write, toggle, lock — alternate function (AFR) not yet implemented |
 | [`EXTI`](driver-library/Inc/EXTI.h) | Working | SYSCFG line routing, mask and edge configuration, NVIC interrupt enable |
-| [`SPI`](driver-library/Inc/SPI.h) | In progress | Register struct, clock enable, configuration definitions and `SPI_Init` — transmit/receive functions pending |
+| [`SPI`](driver-library/Inc/SPI.h) | In progress | Init, peripheral enable, polled transmit, flag status — receive and interrupt-driven transfer pending |
 | `USART` | Planned | — |
 | `I2C` | Planned | — |
 
@@ -78,6 +78,29 @@ GPIO_Init(GPIOD, &cfg);
 GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_Pin_Set);
 ```
 
+Configuring SPI1 as a master and sending a buffer:
+
+```c
+RCC_SPI1_CLK_ENABLE();
+
+SPI_HandleTypeDef_t spi = {0};
+spi.Instance         = SPI1;
+spi.Init.Mode        = SPI_MODE_MASTER;
+spi.Init.CPOL        = SPI_CPOL_LOW;
+spi.Init.CPHA        = SPI_CPHA_FirstEdge;
+spi.Init.BaudRate    = SPI_BAUDRATE_DIV16;
+spi.Init.DFF         = SPI_DFF_8BITS;
+spi.Init.FrameFormat = SPI_FrameFormat_MSB;
+spi.Init.BusConfig   = SPI_BUS_FullDuplex;
+spi.Init.SSM_Cmd     = SPI_SSM_ENABLE;
+
+SPI_Init(&spi);
+SPI_PeriphCmd(&spi, ENABLE);
+
+uint8_t buf[] = {0x0A, 0x0B, 0x0C};
+SPI_TransmitData(&spi, buf, sizeof(buf));
+```
+
 Setting up a rising-edge interrupt on PA0:
 
 ```c
@@ -137,6 +160,10 @@ Decisions worth recording:
 
 - **SPI configuration values are stored pre-shifted.** `SPI_BAUDRATE_DIV16` is `0x18`, not `3` — the value already sits at bit 3 where `CR1` expects it. This is ST's SPL convention and it keeps `SPI_Init` free of per-field shift arithmetic, since every `CR1` field has a fixed position. GPIO could not do this: there the shift depends on the pin number and is not constant.
 
+- **Configuration must finish before the peripheral is enabled.** `SPI_Init` writes `CR1` while SPE is still 0; `SPI_PeriphCmd` sets SPE afterwards. Changing CPOL, CPHA, baud rate or MSTR while SPE is set is undefined behaviour, so the two steps are deliberately separate functions.
+
+- **`TXE` does not mean the byte has left the wire.** SPI is double-buffered: data goes to a transmit buffer first and only then into the shift register. `TXE` reports that the buffer drained, not that transmission finished — that is what `BSY` is for. Disabling SPI on `TXE` alone truncates the last byte.
+
 - **A two-level handle separates the instance from the configuration.** `SPI_HandleTypeDef_t` holds a pointer to the peripheral (`SPI1`–`SPI4`) alongside the configuration struct, so one driver call carries both *which* SPI and *how* it should behave.
 
 - **A peripheral's bus determines which clock-enable register it uses.** GPIO sits on AHB1 (`AHB1ENR`), SYSCFG on APB2 (`APB2ENR`). SPI is split: SPI1 and SPI4 are on APB2 and run at up to 84 MHz, while SPI2 and SPI3 are on APB1 at 42 MHz. The first question when adding any peripheral is which bus it hangs off.
@@ -161,6 +188,6 @@ Erhan Konak'ın *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* Ud
 
 Kütüphane katmanlı bir yapıda: `stm32f407xx.h` donanımı tarif eder, `GPIO.h` / `RCC.h` / `EXTI.h` kullanıcıya sunulan arayüzü tanımlar, `.c` dosyaları bu arayüzü register seviyesinde gerçekler, uygulama kodu ise register bilmez.
 
-Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme tamamlandı; kesme işleyicileri uygulama tarafında yazılıyor. SPI (Serial Peripheral Interface) tarafında register yapısı, clock enable makroları, konfigürasyon tanımları ve `SPI_Init` tamamlandı; veri gönderme/alma fonksiyonları bekliyor. USART ve I2C kurs ilerledikçe gelecek.
+Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme tamamlandı; kesme işleyicileri uygulama tarafında yazılıyor. SPI (Serial Peripheral Interface) tarafında init, çevre birimi etkinleştirme, yoklama (polling) tabanlı veri gönderme ve bayrak okuma tamamlandı; veri alma ve kesme tabanlı aktarım bekliyor. USART ve I2C kurs ilerledikçe gelecek.
 
 `driver-projects/` klasörü, bu kütüphaneyi kullanan küçük uygulamalar için ayrıldı. Repository kökündeki `projects/` klasörü ise kütüphaneden bağımsız genel projeler için kalmaya devam ediyor.
