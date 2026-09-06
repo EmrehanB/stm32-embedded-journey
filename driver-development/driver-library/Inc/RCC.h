@@ -80,8 +80,8 @@
 
 
 #define RCC_SPI1_CLK_ENABLE()        do{        uint32_t tempVal=0;											\
-                                                SET_BIT(RCC_APB2ENR, RCC_APB2ENR_SPI1);                     \
-                                                tempVal= READ_BIT(RCC->APB2ENR , RCC_APB2ENR_SPI1 )         \
+                                                SET_BIT(RCC->APB2ENR, RCC_APB2ENR_SPI1);                \
+                                                tempVal= READ_BIT(RCC->APB2ENR , RCC_APB2ENR_SPI1 ) ;       \
 												UNUSED(tempVal);                                            \
 									  } while (0)
 

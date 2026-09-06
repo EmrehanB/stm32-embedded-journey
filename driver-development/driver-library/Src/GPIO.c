@@ -17,6 +17,9 @@ void GPIO_Init (GPIO_TypeDef_t *GPIOx , GPIO_InitTtypedef *GPIO_ConfigStruct){
 
 		{
 
+
+
+
 			//Mode Konfigürasyonu
 			uint32_t tempVal= GPIOx->MODER;
 			tempVal &= ~( 0x3U << (2*position) );
@@ -25,7 +28,7 @@ void GPIO_Init (GPIO_TypeDef_t *GPIOx , GPIO_InitTtypedef *GPIO_ConfigStruct){
 
 
 
-			if(GPIO_ConfigStruct->Mode == GPIO_MODE_INPUT || GPIO_ConfigStruct->Mode == GPIO_MODE_ANALOG)
+			if(GPIO_ConfigStruct->Mode == GPIO_MODE_OUTPUT || GPIO_ConfigStruct->Mode == GPIO_MODE_ALTFUN)
 			{
 
 				//Otype Konfigürasyonu
@@ -47,8 +50,20 @@ void GPIO_Init (GPIO_TypeDef_t *GPIOx , GPIO_InitTtypedef *GPIO_ConfigStruct){
 			tempVal|= (GPIO_ConfigStruct->PuPd << (2*position));
 			GPIOx->PUPDR=tempVal;
 
-		}
 
+			if(GPIO_ConfigStruct->Mode == GPIO_MODE_ALTFUN){
+
+				//AFRL ve AFRH registerlarının konfigürasyonu
+
+				tempVal  = GPIOx->AFR[ position >> 3 ];             //GPIO pin number ı 8 e bölmüş olduk böylece AFRH mı AFRL mu bulmuş olduk.
+				tempVal &= ~(0xFU << ( ( position & 0x7U ) * 4 ) ); //Burası sayesinde ise doğru bitleri temizlemiş olduk (yukarda açıklama yazmadığıma pişman oldum kodu yazalı çok olmuş. Bundan sonra açıklama yaz.)
+				tempVal |= GPIO_ConfigStruct->Alternate << ( ( position & 0x7U ) * 4 );
+				GPIOx->AFR[ position >> 3 ] =tempVal ;
+			}
+
+
+
+		}
 
 	}
 
