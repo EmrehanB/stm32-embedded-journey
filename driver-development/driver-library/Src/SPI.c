@@ -81,6 +81,47 @@ void SPI_TransmitData(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pData , uint16_
 }
 
 
+void SPI_ReceiveData(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pBuffer , uint16_t sizeOfData){
+
+	if(SPI_Handle->Init.DFF == SPI_DFF_16BITS){
+
+		while(sizeOfData > 0){
+
+			if(SPI_GetFlagStatus( SPI_Handle , SPI_RxNE_FLAG)){
+
+				//içerisi not empty ise veri okur
+				*((uint16_t*) pBuffer) = SPI_Handle->Instance->DR;
+				pBuffer += sizeof(uint16_t);
+				sizeOfData -= 2 ;
+
+
+
+			}
+
+		}
+
+	}
+	else{
+
+		while(sizeOfData > 0){
+
+		if(SPI_GetFlagStatus( SPI_Handle , SPI_RxNE_FLAG)){
+
+			    //içerisi not empty ise veri okur
+				*pBuffer    =  *((__IO uint8_t*) &SPI_Handle->Instance->DR);  //Önce adresini volatile 8 bit pointera typcast ettim (çünkü reg structta 32 bit volatile ) ardından dereference ettim.
+				pBuffer    +=  sizeof(uint8_t);
+				sizeOfData -=  1 ;
+
+
+					}
+		}
+	}
+
+}
+
+
+
+
 
 SPI_FlagStatus_t SPI_GetFlagStatus(SPI_HandleTypeDef_t *SPI_Handle , uint16_t SPI_Flag){
 

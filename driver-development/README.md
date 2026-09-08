@@ -14,7 +14,7 @@ This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, 
 | [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports, SYSCFG and SPI1–SPI4 |
 | [`GPIO`](driver-library/Inc/GPIO.h) | Working | Init with alternate function (AFR) support, read, write, toggle, lock |
 | [`EXTI`](driver-library/Inc/EXTI.h) | Working | SYSCFG line routing, mask and edge configuration, NVIC interrupt enable |
-| [`SPI`](driver-library/Inc/SPI.h) | In progress | Init, peripheral enable, polled transmit, flag status — receive and interrupt-driven transfer pending |
+| [`SPI`](driver-library/Inc/SPI.h) | In progress | Init, peripheral enable, polled transmit and receive, flag status — interrupt-driven and DMA transfer pending |
 | `USART` | Planned | — |
 | `I2C` | Planned | — |
 
@@ -100,6 +100,9 @@ SPI_PeriphCmd(&spi, ENABLE);
 
 uint8_t buf[] = {0x0A, 0x0B, 0x0C};
 SPI_TransmitData(&spi, buf, sizeof(buf));
+
+uint8_t rx[4];
+SPI_ReceiveData(&spi, rx, sizeof(rx));
 ```
 
 Setting up a rising-edge interrupt on PA0:
@@ -167,6 +170,8 @@ Decisions worth recording:
 
 - **Configuration must finish before the peripheral is enabled.** `SPI_Init` writes `CR1` while SPE is still 0; `SPI_PeriphCmd` sets SPE afterwards. Changing CPOL, CPHA, baud rate or MSTR while SPE is set is undefined behaviour, so the two steps are deliberately separate functions.
 
+- **Reading a byte from a 32-bit data register needs a cast.** `SPI->DR` is declared `uint32_t` in the register struct, but in 8-bit frame format only the low byte carries data. Taking the register's address, casting it to `__IO uint8_t*` and dereferencing reads exactly one byte — without the cast the compiler would perform a 32-bit access and the surrounding bits would come along.
+
 - **`TXE` does not mean the byte has left the wire.** SPI is double-buffered: data goes to a transmit buffer first and only then into the shift register. `TXE` reports that the buffer drained, not that transmission finished — that is what `BSY` is for. Disabling SPI on `TXE` alone truncates the last byte.
 
 - **A two-level handle separates the instance from the configuration.** `SPI_HandleTypeDef_t` holds a pointer to the peripheral (`SPI1`–`SPI4`) alongside the configuration struct, so one driver call carries both *which* SPI and *how* it should behave.
@@ -193,6 +198,6 @@ Erhan Konak'ın *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* Ud
 
 Kütüphane katmanlı bir yapıda: `stm32f407xx.h` donanımı tarif eder, `GPIO.h` / `RCC.h` / `EXTI.h` kullanıcıya sunulan arayüzü tanımlar, `.c` dosyaları bu arayüzü register seviyesinde gerçekler, uygulama kodu ise register bilmez.
 
-Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. GPIO sürücüsü alternate function (AFR) desteğiyle tamamlandı. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme çalışıyor. SPI (Serial Peripheral Interface) tarafında init, çevre birimi etkinleştirme, yoklama (polling) tabanlı veri gönderme ve bayrak okuma tamamlandı; veri alma ve kesme tabanlı aktarım bekliyor. USART ve I2C kurs ilerledikçe gelecek.
+Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. GPIO sürücüsü alternate function (AFR) desteğiyle tamamlandı. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme çalışıyor. SPI (Serial Peripheral Interface) tarafında init, çevre birimi etkinleştirme, yoklama (polling) tabanlı veri gönderme ve alma ile bayrak okuma tamamlandı; kesme tabanlı aktarım ve DMA bekliyor. USART ve I2C kurs ilerledikçe gelecek.
 
 `driver-projects/` klasörü, bu kütüphaneyi kullanan küçük uygulamalar için ayrıldı. Repository kökündeki `projects/` klasörü ise kütüphaneden bağımsız genel projeler için kalmaya devam ediyor.

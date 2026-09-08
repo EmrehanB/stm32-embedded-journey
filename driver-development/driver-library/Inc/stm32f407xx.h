@@ -338,6 +338,7 @@ typedef struct{
 
 #define SPI_TxE_FLAG				  ( 0x1U << 1 )
 #define SPI_BSY_FLAG                  ( 0x1U << 7 )
+#define SPI_RxNE_FLAG                 ( 0x1U << 0 )
 
 
 

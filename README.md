@@ -66,9 +66,9 @@ Split into two layers: `driver-library/` holds the drivers themselves, `driver-p
 |---|---|
 | `stm32f407xx.h` — device header, base addresses, register structs | Working |
 | `RCC` — peripheral clock enable/disable | Working |
-| `GPIO` — init, read, write, toggle, lock | In progress |
+| `GPIO` — init , read, write, toggle, lock | Working |
 | `EXTI` — line routing, edge config, NVIC enable | Working |
-| `SPI` — init, enable, polled transmit | In progress |
+| `SPI` — init, enable, polled transmit/receive | In progress |
 | `USART` · `I2C` | Planned |
 Details: [driver-development](./driver-development)
 

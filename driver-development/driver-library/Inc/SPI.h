@@ -168,6 +168,10 @@ void SPI_TransmitData(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pData , uint16_
 SPI_FlagStatus_t SPI_GetFlagStatus(SPI_HandleTypeDef_t *SPI_Handle , uint16_t SPI_Flag);
 
 
+
+void SPI_ReceiveData(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pBuffer , uint16_t sizeOfData);
+
+
 /*
  * SPI VERI GONDERME PROSEDURU  (RM0090, "Transmitting/Receiving data")
  *
