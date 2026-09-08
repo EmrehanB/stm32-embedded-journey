@@ -14,7 +14,7 @@ This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, 
 | [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports, SYSCFG and SPI1–SPI4 |
 | [`GPIO`](driver-library/Inc/GPIO.h) | Working | Init with alternate function (AFR) support, read, write, toggle, lock |
 | [`EXTI`](driver-library/Inc/EXTI.h) | Working | SYSCFG line routing, mask and edge configuration, NVIC interrupt enable |
-| [`SPI`](driver-library/Inc/SPI.h) | In progress | Init, peripheral enable, polled transmit and receive, flag status — interrupt-driven and DMA transfer pending |
+| [`SPI`](driver-library/Inc/SPI.h) | In progress | Init, peripheral enable, **polled** transmit and receive, flag status — interrupt-driven (`TXEIE`/`RXNEIE`) and DMA transfer pending |
 | `USART` | Planned | — |
 | `I2C` | Planned | — |
 
@@ -50,7 +50,7 @@ driver-development/
 │   ├── 02-button-controlled-led/
 │   ├── 03-exti-configuration/
 │   ├── 04-button-interrupt/
-│   └── 05-spi-transmit-on-interrupt/
+│   └── 05-button-triggered-spi/
 │
 └── README.md
 ```
@@ -171,6 +171,8 @@ Decisions worth recording:
 - **Configuration must finish before the peripheral is enabled.** `SPI_Init` writes `CR1` while SPE is still 0; `SPI_PeriphCmd` sets SPE afterwards. Changing CPOL, CPHA, baud rate or MSTR while SPE is set is undefined behaviour, so the two steps are deliberately separate functions.
 
 - **Reading a byte from a 32-bit data register needs a cast.** `SPI->DR` is declared `uint32_t` in the register struct, but in 8-bit frame format only the low byte carries data. Taking the register's address, casting it to `__IO uint8_t*` and dereferencing reads exactly one byte — without the cast the compiler would perform a 32-bit access and the surrounding bits would come along.
+
+- **All transfers are currently polled.** `SPI_TransmitData` and `SPI_ReceiveData` spin on `TXE` and `RXNE` in `while` loops, so the processor does nothing else while a transfer is in flight. This is deliberate: the interrupt-driven version (`TXEIE` and `RXNEIE` in `CR2`) is written next, and comparing the two is the point of doing the blocking one first.
 
 - **`TXE` does not mean the byte has left the wire.** SPI is double-buffered: data goes to a transmit buffer first and only then into the shift register. `TXE` reports that the buffer drained, not that transmission finished — that is what `BSY` is for. Disabling SPI on `TXE` alone truncates the last byte.
 
