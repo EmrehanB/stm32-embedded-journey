@@ -1,6 +1,8 @@
-# 05 — SPI Transmit on Interrupt
+# 05 — Button-Triggered SPI Transmit
 
 Two peripherals working together for the first time: pressing the user button raises an EXTI interrupt, and the handler sends a string over SPI1.
+
+**The interrupt here is EXTI, not SPI.** The button is interrupt-driven; the SPI transfer itself is polled — the driver spins on `TXE` and `BSY` inside the handler. Interrupt-driven SPI (`TXEIE` / `RXNEIE`) is a separate project.
 
 Everything below `main.c` — the GPIO, EXTI, NVIC and SPI drivers — was written from scratch. No HAL (Hardware Abstraction Layer), no CMSIS (Cortex Microcontroller Software Interface Standard) peripheral driver.
 
@@ -65,11 +67,21 @@ Deliberately outside `main()`. The interrupt handler needs the same handle that 
 
 This is the standard arrangement for peripherals that are driven from more than one execution context, and it is the same reason ST's own drivers keep handles global.
 
-## Known limitation
+## Known limitation: a polled transfer inside an ISR
 
-The transfer runs inside the interrupt handler and blocks until the last bit leaves the wire. At 2 MHz, sixteen bytes take roughly 64 µs, during which no interrupt of equal or lower priority can run.
+`SPI_TransmitData` waits on `TXE` before every byte and on `BSY` at the end. Those waits are `while` loops, and here they run **inside the interrupt handler**.
 
-For this project the cost is invisible, but the correct pattern is for the handler to set a flag and let the main loop do the work. Moving to interrupt-driven SPI (`TXEIE` in `CR2`) or to DMA removes the blocking entirely — that is what comes next.
+At 2 MHz, sixteen bytes take roughly 64 µs. For that entire window no interrupt of equal or lower priority can run — the handler is holding the processor while doing nothing but waiting on a status bit.
+
+Two ways out, both planned:
+
+**Set a flag, transfer in `main`.** The handler does nothing but record that the button was pressed; the main loop performs the transfer. The blocking still exists but no longer happens in interrupt context.
+
+**Interrupt-driven SPI.** Enabling `TXEIE` in `CR2` makes the peripheral raise its own interrupt whenever the transmit buffer drains. Each byte is written from a short handler and the processor is free in between — no waiting at all.
+
+DMA removes even that, letting the peripheral move the whole block without the processor.
+
+This project is deliberately the blocking version: comparing it against the interrupt-driven one is the point.
 
 ## Hardware
 
@@ -86,6 +98,8 @@ For this project the cost is invisible, but the correct pattern is for the handl
 ## Türkçe
 
 İki çevre biriminin ilk kez birlikte çalıştığı proje: kullanıcı butonuna basılınca EXTI kesmesi oluşuyor, kesme işleyicisi SPI1 üzerinden bir metin gönderiyor.
+
+**Buradaki kesme EXTI'den geliyor, SPI'dan değil.** Buton kesme tabanlı; SPI aktarımının kendisi yoklama (polling) ile yapılıyor — sürücü işleyicinin içinde `TXE` ve `BSY` bayraklarını bekliyor. Kesme tabanlı SPI (`TXEIE` / `RXNEIE`) ayrı bir proje olacak.
 
 `main.c` altındaki her katman — GPIO, EXTI, NVIC ve SPI sürücüleri — sıfırdan yazıldı. HAL ve CMSIS çevre birimi sürücüleri kullanılmıyor.
 
@@ -115,8 +129,18 @@ Kesme işleyicisi, `SPI_Config()` tarafından doldurulan aynı handle'a ihtiyaç
 
 Birden fazla yürütme bağlamından sürülen çevre birimlerinde standart düzen budur; ST'nin kendi sürücüleri de handle'ları global tutar.
 
-### Bilinen sınırlama
+### Bilinen sınırlama: ISR içinde yoklama tabanlı aktarım
 
-Aktarım kesme işleyicisinin içinde çalışıyor ve son bit hattan çıkana kadar bloke ediyor. 2 MHz'de on altı bayt yaklaşık 64 µs sürüyor; bu süre boyunca aynı veya daha düşük öncelikli hiçbir kesme çalışamıyor.
+`SPI_TransmitData` her bayttan önce `TXE`, sonunda `BSY` bekliyor. Bu beklemeler `while` döngüsü ve burada **kesme işleyicisinin içinde** çalışıyorlar.
 
-Bu projede maliyeti görünmüyor, ama doğru kalıp işleyicinin bir bayrak set etmesi ve işi ana döngünün yapmasıdır. Kesme tabanlı SPI (`CR2`'deki `TXEIE`) veya DMA bu bloklamayı tamamen ortadan kaldırır — sıradaki adım bu.
+2 MHz'de on altı bayt yaklaşık 64 µs sürüyor. Bu süre boyunca aynı veya daha düşük öncelikli hiçbir kesme çalışamıyor — işleyici, bir durum bitini beklemekten başka bir şey yapmadan işlemciyi tutuyor.
+
+İki çıkış yolu var, ikisi de planlı:
+
+**Bayrak set et, aktarımı `main`'de yap.** İşleyici yalnızca butona basıldığını kaydeder; aktarımı ana döngü yapar. Bloklama devam eder ama artık kesme bağlamında değildir.
+
+**Kesme tabanlı SPI.** `CR2`'deki `TXEIE` etkinleştirildiğinde çevre birimi, gönderme tamponu boşaldıkça kendi kesmesini üretir. Her bayt kısa bir işleyiciden yazılır ve aralarda işlemci serbesttir — hiç bekleme yoktur.
+
+DMA bunu da ortadan kaldırır; çevre birimi tüm bloğu işlemci karışmadan taşır.
+
+Bu proje bilerek bloklayan sürüm: kesme tabanlı olanla karşılaştırmak asıl amaç.
