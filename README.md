@@ -6,6 +6,8 @@ Embedded systems programming on STM32, from bare-metal upwards.
 
 Everything here is written at register level against [RM0090](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#documentation) — no HAL (Hardware Abstraction Layer), no CMSIS (Cortex Microcontroller Software Interface Standard) peripheral drivers. The aim is to understand what vendor libraries do underneath rather than to call them.
 
+The implementations are written by hand — I don't have them generated for me. That is not a stance against AI tools; the purpose of this repository is learning, and code I did not reason through would teach me nothing. I use AI the way I use a datasheet or a forum thread: to understand a mechanism I'm stuck on, not to write it for me. Every line here is something I can explain and defend.
+
 Each exercise lives in its own folder with a dedicated README explaining the approach. The repo grows with new sections as the courses progress.
 
 See [RESOURCES.md](./RESOURCES.md) for courses, reference documents, and articles used throughout this repo.
@@ -52,7 +54,7 @@ Reference: [Cortex-M4 Technical Reference Manual](https://developer.arm.com/docu
 | 01 | Inline asm: add in memory | Inline assembly, LDR/STR, load-store architecture | [01-inline-asm-add](./course-2-cortex-m/01-inline-asm-add) |
 | 02 | Inline asm: constraints & MRS | Constraint strings (r/=r/i), reading CONTROL with MRS | [02-inline-asm-constraints](./course-2-cortex-m/02-inline-asm-constraints) |
 
-Currently paused , resumes after the driver development track.
+Currently paused, resumes after the driver development track.
 
 ---
 
@@ -66,7 +68,7 @@ Split into two layers: `driver-library/` holds the drivers themselves, `driver-p
 |---|---|
 | `stm32f407xx.h` — device header, base addresses, register structs | Working |
 | `RCC` — peripheral clock enable/disable | Working |
-| `GPIO` — init , read, write, toggle, lock | Working |
+| `GPIO` — init, read, write, toggle, lock | Working |
 | `EXTI` — line routing, edge config, NVIC enable | Working |
 | `SPI` — init, enable, polled transmit/receive | In progress |
 | `USART` · `I2C` | Planned |
@@ -88,6 +90,8 @@ Standalone projects combining skills from completed exercises — not tied to a 
 ## Türkçe
 
 STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Tüm kod register seviyesinde, RM0090 referans kılavuzuna karşı yazılıyor; HAL ve CMSIS çevre birimi sürücüleri kullanılmıyor.
+
+Uygulamaları elle yazıyorum, bana ürettirmiyorum. Bu, yapay zekâ araçlarına karşı bir duruş değil; bu deponun amacı öğrenmek ve üzerinde düşünmediğim bir kod bana hiçbir şey öğretmez. Yapay zekâyı bir datasheet veya forum gönderisi gibi kullanıyorum: takıldığım bir mekanizmayı anlamak için, benim yerime yazsın diye değil. Buradaki her satırı açıklayabilirim.
 
 Repo dört bölümden oluşuyor: **Course 1** bare-metal embedded C (tamamlandı, 11 alıştırma), **Course 2** ARM Cortex-M işlemci mimarisi (bellek haritası bölümünde duraklatıldı), **Driver Development** kendi sürücü kütüphanem — GPIO/EXTI/SPI/USART/I2C (aktif olarak geliştiriliyor), **Projects** ise kurs alıştırmalarından bağımsız, kazanılan becerileri birleştiren kendi projelerim.
 
