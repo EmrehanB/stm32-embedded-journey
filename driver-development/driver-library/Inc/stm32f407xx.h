@@ -4,6 +4,8 @@
 #define INC_STM32F407XX_H_
 
 #include <stdint.h>
+#include <string.h>
+#include <stddef.h>
 
 #define __IO volatile
 
@@ -22,7 +24,8 @@ typedef enum{
 	EXTI0_IRQNumber = 6 ,
 	EXTI1_IRQNumber = 7 ,
 	EXTI2_IRQNumber = 8 ,
-	EXTI3_IRQNumber = 9
+	EXTI3_IRQNumber = 9	,
+	SPI1_IRQNumber  =35 ,
 
 
 

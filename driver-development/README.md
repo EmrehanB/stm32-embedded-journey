@@ -14,7 +14,7 @@ This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, 
 | [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports, SYSCFG and SPI1–SPI4 |
 | [`GPIO`](driver-library/Inc/GPIO.h) | Working | Init with alternate function (AFR) support, read, write, toggle, lock |
 | [`EXTI`](driver-library/Inc/EXTI.h) | Working | SYSCFG line routing, mask and edge configuration, NVIC interrupt enable |
-| [`SPI`](driver-library/Inc/SPI.h) | In progress | Init, peripheral enable, **polled** transmit and receive, flag status — interrupt-driven (`TXEIE`/`RXNEIE`) and DMA transfer pending |
+| [`SPI`](driver-library/Inc/SPI.h) | In progress | Init, peripheral enable, polled and **interrupt-driven** transmit (`TXEIE`), polled receive, flag status — receive interrupts (`RXNEIE`), error interrupts (`ERRIE`) and DMA pending |
 | `USART` | Planned | — |
 | `I2C` | Planned | — |
 
@@ -50,7 +50,8 @@ driver-development/
 │   ├── 02-button-controlled-led/
 │   ├── 03-exti-configuration/
 │   ├── 04-button-interrupt/
-│   └── 05-button-triggered-spi/
+│   ├── 05-button-triggered-spi/
+│   └── 06-interrupt-driven-spi/
 │
 └── README.md
 ```
@@ -103,6 +104,25 @@ SPI_TransmitData(&spi, buf, sizeof(buf));
 
 uint8_t rx[4];
 SPI_ReceiveData(&spi, rx, sizeof(rx));
+```
+
+The same transfer without blocking. The handle must be global and the buffer must outlive the call, because the driver only records the address and returns — the bytes are written from the SPI interrupt afterwards:
+
+```c
+SPI_HandleTypeDef_t spi = {0};        // file scope, not inside a function
+
+void SPI1_IRQHandler(void)
+{
+    SPI_InterruptHandler(&spi);
+}
+
+void start_transfer(void)
+{
+    static uint8_t buf[] = {0x0A, 0x0B, 0x0C};   // static: outlives the call
+
+    NVIC_EnableInterrupt(SPI1_IRQNumber);
+    SPI_TransmitData_IT(&spi, buf, sizeof(buf));  // returns immediately
+}
 ```
 
 Setting up a rising-edge interrupt on PA0:
@@ -172,7 +192,15 @@ Decisions worth recording:
 
 - **Reading a byte from a 32-bit data register needs a cast.** `SPI->DR` is declared `uint32_t` in the register struct, but in 8-bit frame format only the low byte carries data. Taking the register's address, casting it to `__IO uint8_t*` and dereferencing reads exactly one byte — without the cast the compiler would perform a 32-bit access and the surrounding bits would come along.
 
-- **All transfers are currently polled.** `SPI_TransmitData` and `SPI_ReceiveData` spin on `TXE` and `RXNE` in `while` loops, so the processor does nothing else while a transfer is in flight. This is deliberate: the interrupt-driven version (`TXEIE` and `RXNEIE` in `CR2`) is written next, and comparing the two is the point of doing the blocking one first.
+- **Transmit has two implementations, kept side by side on purpose.** `SPI_TransmitData` spins on `TXE` and `BSY` in `while` loops, so the processor does nothing else while a transfer is in flight. `SPI_TransmitData_IT` stores the buffer in the handle, enables `TXEIE` and returns; each byte is then written from `SPI1_IRQHandler`. Keeping both makes the cost of blocking measurable rather than theoretical — projects 05 and 06 run the same task through each. Receive is still polled only.
+
+- **An asynchronous transfer moves the ownership of the buffer.** The polled call is finished with the caller's data before it returns. The interrupt-driven call only records the address; the bytes are read later, from a different execution context. A buffer with automatic storage duration is therefore a lifetime bug rather than a style choice — the stack frame it lives in is gone by the time the SPI interrupt reads it, and nothing about the register configuration hints at this.
+
+- **The per-byte ISR routine is selected once, not per byte.** The data frame format cannot change mid-transfer, so `SPI_TransmitData_IT` reads the DFF bit once and stores a matching function pointer in the handle. `SPI_InterruptHandler` then dispatches through it with no branch of its own. This is what a state machine looks like in C: the handle carries what to do next, the ISR only carries it out.
+
+- **Setting `TXEIE` is what starts the transfer.** There is no step that sends a first byte by hand. `TXE` is already 1 while the transmit buffer is empty, so enabling the interrupt makes the `TXEIE && TXE` condition true immediately and the peripheral raises IRQ 35 on its own.
+
+- **State shared with an interrupt handler needs `volatile`.** `busStateTX` is cleared from interrupt context and read from thread context. Without the qualifier the compiler may keep it in a register, and a wait loop on it would never terminate above `-O0`. The compiler cannot see that an interrupt exists; the qualifier is how it is told.
 
 - **`TXE` does not mean the byte has left the wire.** SPI is double-buffered: data goes to a transmit buffer first and only then into the shift register. `TXE` reports that the buffer drained, not that transmission finished — that is what `BSY` is for. Disabling SPI on `TXE` alone truncates the last byte.
 
@@ -200,6 +228,10 @@ Erhan Konak'ın *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* Ud
 
 Kütüphane katmanlı bir yapıda: `stm32f407xx.h` donanımı tarif eder, `GPIO.h` / `RCC.h` / `EXTI.h` kullanıcıya sunulan arayüzü tanımlar, `.c` dosyaları bu arayüzü register seviyesinde gerçekler, uygulama kodu ise register bilmez.
 
-Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsünde init, read, write, toggle ve lock tamamlandı; alternatif fonksiyon (AFR) desteği henüz yok. GPIO sürücüsü alternate function (AFR) desteğiyle tamamlandı. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme çalışıyor. SPI (Serial Peripheral Interface) tarafında init, çevre birimi etkinleştirme, yoklama (polling) tabanlı veri gönderme ve alma ile bayrak okuma tamamlandı; kesme tabanlı aktarım ve DMA bekliyor. USART ve I2C kurs ilerledikçe gelecek.
+Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsü init, read, write, toggle, lock ve alternate function (AFR) desteğiyle tamamlandı. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme çalışıyor. SPI (Serial Peripheral Interface) tarafında init, çevre birimi etkinleştirme, bayrak okuma, yoklama (polling) tabanlı gönderme ve alma ile **kesme tabanlı gönderme** (`TXEIE`) tamamlandı; alma kesmeleri (`RXNEIE`), hata kesmeleri (`ERRIE`) ve DMA bekliyor. USART ve I2C kurs ilerledikçe gelecek.
+
+Gönderme tarafında iki uygulama bilerek yan yana duruyor. Yoklama sürümü bayrağı `while` döngüsüyle bekler ve işlemciyi tutar; kesme sürümü tamponun adresini handle'a yazıp döner, baytları `SPI1_IRQHandler` yazar. Projeler 05 ve 06 aynı işi iki yoldan yapıyor, böylece bloklamanın maliyeti teorik değil ölçülebilir hale geliyor.
+
+Asenkron sürüme geçmek tamponun sahipliğini de değiştiriyor: fonksiyon veriyi göndermeden döndüğü için tamponun çağrıdan uzun yaşaması gerekiyor. Bu, register yapılandırmasında hiç görünmeyen bir fark.
 
 `driver-projects/` klasörü, bu kütüphaneyi kullanan küçük uygulamalar için ayrıldı. Repository kökündeki `projects/` klasörü ise kütüphaneden bağımsız genel projeler için kalmaya devam ediyor.

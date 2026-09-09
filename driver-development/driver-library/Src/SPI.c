@@ -1,6 +1,41 @@
 #include "SPI.h"
 
 
+static void SPI_CloseISR_TX(SPI_HandleTypeDef_t *SPI_Handle){
+
+	SPI_Handle->Instance->CR2 &= ~ (0x1U << 7); // TXEIE clearlama işlemi
+	SPI_Handle->TxDataSize  = 0           ;
+	SPI_Handle->pTxDataAddr = NULL		  ;
+	SPI_Handle->busStateTX  = SPI_BUS_FREE;
+}
+
+
+static void SPI_TransmitHelper_16Bits (SPI_HandleTypeDef_t *SPI_Handle) {
+
+	SPI_Handle->Instance->DR = *((uint16_t*)(SPI_Handle->pTxDataAddr));
+	SPI_Handle->pTxDataAddr += sizeof(uint16_t);
+	SPI_Handle->TxDataSize  -= 2 ;
+
+	if(SPI_Handle->TxDataSize == 0){
+			SPI_CloseISR_TX(SPI_Handle);
+		}
+}
+
+
+static void SPI_TransmitHelper_8Bits (SPI_HandleTypeDef_t *SPI_Handle) {
+
+	SPI_Handle->Instance->DR = *((uint8_t*)(SPI_Handle->pTxDataAddr));
+	SPI_Handle->pTxDataAddr += sizeof(uint8_t);
+	SPI_Handle->TxDataSize  -- ;
+
+	if(SPI_Handle->TxDataSize == 0){
+		SPI_CloseISR_TX(SPI_Handle);
+	}
+
+
+}
+
+
 //SPI Init yapar
 void SPI_Init(SPI_HandleTypeDef_t *SPI_Handle){
 
@@ -79,6 +114,61 @@ void SPI_TransmitData(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pData , uint16_
 
 
 }
+
+
+void SPI_TransmitData_IT(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pData , uint16_t sizeOfData){
+
+	SPI_BusStatus_t busState = SPI_Handle->busStateTX;
+
+	if(busState != SPI_BUS_BUSY_TX){  //Birnevi race condition engelliyoruz.
+
+		SPI_Handle->busStateTX = SPI_BUS_BUSY_TX;
+		SPI_Handle->pTxDataAddr= pData;
+		SPI_Handle->TxDataSize = sizeOfData;
+
+		if(SPI_Handle->Instance->CR1 & (0x1U << 11)) {         //SPI --> CR1 --> DFF biti kontrolü 1 mi 0 mı ? 1 ise 16 bit veri 0 ise 8 bit veri aktaracağız.
+
+			SPI_Handle->TxISRFunction = SPI_TransmitHelper_16Bits;
+
+
+		}
+		else{
+
+			SPI_Handle->TxISRFunction = SPI_TransmitHelper_8Bits;
+
+		}
+
+
+		SPI_Handle->Instance->CR2 |= (0x1U << 7);
+	}
+
+	else{
+
+
+
+
+	}
+
+
+}
+
+
+void SPI_InterruptHandler(SPI_HandleTypeDef_t *SPI_Handle){
+
+	uint8_t interruptSource=0 ;
+	uint8_t interruptFlag  =0 ;
+
+	interruptSource	 = SPI_Handle->Instance->CR2 & (0x1U << 7); //CR2 registerının TXEIE bit'i enable mı? 1 ya da 0 yazıcaz.
+	interruptFlag    = SPI_Handle->Instance->SR  & (0x1U << 1); //SR registerının TXE bit'i enable mı? 1 ya da 0 yazıcaz.
+
+	if(interruptSource!=0 && interruptFlag !=0) { //interrupt gerçekleşmiş yani fonksiyon çağırması yapılabilir
+
+		SPI_Handle->TxISRFunction(SPI_Handle);
+
+	}
+
+}
+
 
 
 void SPI_ReceiveData(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pBuffer , uint16_t sizeOfData){

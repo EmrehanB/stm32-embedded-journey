@@ -7,6 +7,16 @@
 
 
 
+typedef enum{
+
+	SPI_BUS_FREE    = 0x0U,
+	SPI_BUS_BUSY_TX = 0x1U,
+	SPI_BUS_BUSY_RX = 0x2U
+
+}SPI_BusStatus_t;
+
+
+
 
 // @def_group SPI_BaudRates
 #define SPI_BAUDRATE_DIV2  	   ( (uint32_t) (0x00) ) // 3. , 4. ve 5. bitlere bakıyoruz ilkinin 3. biti sıfır yani her şey sıfır
@@ -145,10 +155,16 @@ typedef struct{
 }SPI_InitTypeDef_t;
 
 
-typedef struct{               //kodun daha güzel gözükmesi açısından oluşturdum.
+typedef struct __SPI_HandleTypeDef_t{
 
 	SPI_TypeDef_t *Instance ; // SPI1/2/3/4 bunlardan birinin adresini tutacak.
 	SPI_InitTypeDef_t Init  ;
+	uint8_t  *pTxDataAddr	; // Artık datamın adresini gloval şekilde tutabilir ve hem mainde hem spi.c de aynı datayı kullanabilirim.Çünkü handle ları globalde tanımlıyorum.
+	uint16_t  TxDataSize	;
+	uint8_t   busStateTX    ;
+	void (*TxISRFunction)(struct __SPI_HandleTypeDef_t *SPI_Handle);
+
+
 
 }SPI_HandleTypeDef_t;
 
@@ -161,7 +177,7 @@ void SPI_PeriphCmd(SPI_HandleTypeDef_t *SPI_Handle , FunctionalState_t stateOfSP
 
 
 //polling metodu ile transmit (send) data yapacağız
-void SPI_TransmitData(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pData , uint16_t sizeOfData);
+void SPI_TransmitData(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pData , uint16_t sizeOfData); 		//polling metod
 // aşağıda veri gönderme presdürünün açıklaması var
 
 
@@ -170,6 +186,15 @@ SPI_FlagStatus_t SPI_GetFlagStatus(SPI_HandleTypeDef_t *SPI_Handle , uint16_t SP
 
 
 void SPI_ReceiveData(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pBuffer , uint16_t sizeOfData);
+
+
+
+void SPI_TransmitData_IT(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pData , uint16_t sizeOfData);	//interrupt metod
+
+
+
+void SPI_InterruptHandler(SPI_HandleTypeDef_t *SPI_Handle);
+
 
 
 /*
