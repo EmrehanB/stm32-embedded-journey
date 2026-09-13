@@ -1,6 +1,6 @@
 # Kaynaklar ve Makaleler / Resources & Articles
 
-The courses, official documentation, and articles/resources I benefited from while working on this repository.
+The courses, official documentation, articles and consultation sources I benefited from while working on this repository.
 
 ## Kurslar (Courses)
 
@@ -43,11 +43,16 @@ The courses, official documentation, and articles/resources I benefited from whi
 - [Serial Communication](https://learn.sparkfun.com/tutorials/serial-communication) — SparkFun. Seri ve paralel aktarım farkı, senkron ve asenkron ayrımı, baud rate, çerçeveleme. 
 - [Serial Peripheral Interface (SPI)](https://learn.sparkfun.com/tutorials/serial-peripheral-interface-spi/all) — SparkFun. MOSI/MISO/SCK/SS hatları, kaydırma yazmacı modeli, CPOL ve CPHA modları, çoklu slave bağlantısı
 - [Shift Registers](https://learn.sparkfun.com/tutorials/shift-registers) — SparkFun. Seri-paralel dönüşüm ve kaydırma yazmacı mantığı — SPI'ın çalışma prensibinin donanımsal temeli
+- [USART vs. UART: Differences and Applications](https://www.edn.com/usart-vs-uart-know-the-difference/) — Jacob Beningo, EDN. UART ile USART farkı: saatin nasıl üretildiği (dahili saat + start biti ile hizalama, ya da ayrı saat hattı) ve protokol desteği. STM32'de ikisinin neden ayrı çevre birimi olarak bulunduğu
+
+## Danışma ve Geri Bildirim (Consultation & Feedback)
+
+- **Claude (Anthropic)** — Referans manüeldeki register tanımlarını yorumlarken, bir çevre biriminin neden o şekilde davrandığını anlamaya çalışırken ve yazdığım kodu gözden geçirirken danıştığım kaynak. Bu depodaki sürücü kodu bana ait; Claude kavramları doğrulamak, tasarım kararlarını tartışmak ve hatalarımı erken yakalamak için kullanıldı
 
 ---
 
 ## Türkçe
 
-Bu depodaki çalışmalar boyunca faydalandığım kurslar, resmi dokümanlar ve okuduğum makalelerin listesi. Kaynak göstermek amacıyla tutuluyor. Çalıştıkça burayı genişletiyorum.
+Bu depodaki çalışmalar boyunca faydalandığım kurslar, resmi dokümanlar, okuduğum makaleler ve danıştığım kaynakların listesi. Kaynak göstermek amacıyla tutuluyor. Çalıştıkça burayı genişletiyorum.
 
 Liste, çevre birimi sürücüleri eklendikçe (SPI, USART, I2C) yeni başlıklarla büyüyecek.
