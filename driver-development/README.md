@@ -14,7 +14,7 @@ This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, 
 | [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports, SYSCFG and SPI1–SPI4 |
 | [`GPIO`](driver-library/Inc/GPIO.h) | Working | Init with alternate function (AFR) support, read, write, toggle, lock |
 | [`EXTI`](driver-library/Inc/EXTI.h) | Working | SYSCFG line routing, mask and edge configuration, NVIC interrupt enable |
-| [`SPI`](driver-library/Inc/SPI.h) | In progress | Init, peripheral enable, polled and **interrupt-driven** transmit (`TXEIE`), polled receive, flag status — receive interrupts (`RXNEIE`), error interrupts (`ERRIE`) and DMA pending |
+| [`SPI`](driver-library/Inc/SPI.h) | In progress | Init, peripheral enable, polled and interrupt-driven transmit and receive, flag status |interrupts (`RXNEIE`), error interrupts (`ERRIE`) and DMA pending |
 | `USART` | Planned | — |
 | `I2C` | Planned | — |
 

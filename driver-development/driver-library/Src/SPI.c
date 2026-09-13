@@ -10,6 +10,16 @@ static void SPI_CloseISR_TX(SPI_HandleTypeDef_t *SPI_Handle){
 }
 
 
+static void SPI_CloseISR_RX(SPI_HandleTypeDef_t *SPI_Handle){
+
+	SPI_Handle->Instance->CR2 &= ~ (0x1U << 6); // RXNEIE clearlama işlemi
+	SPI_Handle->RxDataSize  = 0           ;
+	SPI_Handle->pRxDataAddr = NULL		  ;
+	SPI_Handle->busStateRX  = SPI_BUS_FREE;
+}
+
+
+
 static void SPI_TransmitHelper_16Bits (SPI_HandleTypeDef_t *SPI_Handle) {
 
 	SPI_Handle->Instance->DR = *((uint16_t*)(SPI_Handle->pTxDataAddr));
@@ -34,6 +44,37 @@ static void SPI_TransmitHelper_8Bits (SPI_HandleTypeDef_t *SPI_Handle) {
 
 
 }
+
+
+static void SPI_ReceiveHelper_8Bits (SPI_HandleTypeDef_t *SPI_Handle) {
+
+	*(uint8_t*) SPI_Handle->pRxDataAddr =  *((__IO uint8_t*)&SPI_Handle->Instance->DR);
+	SPI_Handle->pRxDataAddr += sizeof(uint8_t);
+	SPI_Handle->RxDataSize --;
+
+	if(SPI_Handle->RxDataSize == 0){
+
+		SPI_CloseISR_RX(SPI_Handle);
+	}
+
+
+}
+
+static void SPI_ReceiveHelper_16Bits (SPI_HandleTypeDef_t *SPI_Handle) {
+
+	*(uint16_t*) SPI_Handle->pRxDataAddr = (uint16_t) SPI_Handle->Instance->DR;
+	SPI_Handle->pRxDataAddr += sizeof(uint16_t);
+	SPI_Handle->RxDataSize  -=2;
+
+	if(SPI_Handle->RxDataSize == 0){
+
+		SPI_CloseISR_RX(SPI_Handle);
+	}
+
+
+}
+
+
 
 
 //SPI Init yapar
@@ -167,6 +208,15 @@ void SPI_InterruptHandler(SPI_HandleTypeDef_t *SPI_Handle){
 
 	}
 
+
+	interruptSource	 = SPI_Handle->Instance->CR2 & (0x1U << 6); //CR2 registerının RXNEIE biti
+	interruptFlag    = SPI_Handle->Instance->SR  & (0x1U << 0); //SR registerının RXNE biti
+
+	if(interruptSource!=0 && interruptFlag !=0) { //interrupt gerçekleşmiş yani fonksiyon çağırması yapılabilir
+
+		SPI_Handle->RxISRFunction(SPI_Handle);
+
+		}
 }
 
 
@@ -208,6 +258,35 @@ void SPI_ReceiveData(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pBuffer , uint16
 	}
 
 }
+
+
+
+void SPI_ReceiveData_IT(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pBuffer , uint16_t sizeOfData){
+
+	SPI_BusStatus_t busState = SPI_Handle->busStateRX ;
+
+	if(busState != SPI_BUS_BUSY_RX){
+
+		SPI_Handle->pRxDataAddr = (uint8_t *)pBuffer	;
+		SPI_Handle->RxDataSize  = (uint16_t) sizeOfData ;
+		SPI_Handle->busStateRX  = SPI_BUS_BUSY_RX		;
+
+		if(SPI_Handle->Instance->CR1 & (0x1U << 11)){  //DFF =? 1 doğru ise 16 bit data çekicez.
+
+			SPI_Handle->RxISRFunction = SPI_ReceiveHelper_16Bits;
+
+		}
+		else{
+
+			SPI_Handle->RxISRFunction = SPI_ReceiveHelper_8Bits;
+
+		}
+
+		SPI_Handle->Instance->CR2 |= (0x1U << 6); // RXNEIE
+	}
+
+}
+
 
 
 

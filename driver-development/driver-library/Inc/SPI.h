@@ -161,8 +161,12 @@ typedef struct __SPI_HandleTypeDef_t{
 	SPI_InitTypeDef_t Init  ;
 	uint8_t  *pTxDataAddr	; // Artık datamın adresini gloval şekilde tutabilir ve hem mainde hem spi.c de aynı datayı kullanabilirim.Çünkü handle ları globalde tanımlıyorum.
 	uint16_t  TxDataSize	;
+	uint8_t  *pRxDataAddr	;
+	uint16_t  RxDataSize	;
 	uint8_t   busStateTX    ;
+	uint8_t   busStateRX    ;
 	void (*TxISRFunction)(struct __SPI_HandleTypeDef_t *SPI_Handle);
+	void (*RxISRFunction)(struct __SPI_HandleTypeDef_t *SPI_Handle);
 
 
 
@@ -190,6 +194,10 @@ void SPI_ReceiveData(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pBuffer , uint16
 
 
 void SPI_TransmitData_IT(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pData , uint16_t sizeOfData);	//interrupt metod
+
+
+
+void SPI_ReceiveData_IT(SPI_HandleTypeDef_t *SPI_Handle , uint8_t *pBuffer , uint16_t sizeOfData);
 
 
 

@@ -269,6 +269,11 @@ typedef struct{
 
 
 
+
+
+
+
+
 #define GPIOA 	( (GPIO_TypeDef_t*) GPIOA_BASE_ADDR )
 #define GPIOB 	( (GPIO_TypeDef_t*) GPIOB_BASE_ADDR )
 #define GPIOC 	( (GPIO_TypeDef_t*) GPIOC_BASE_ADDR )
