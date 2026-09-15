@@ -2,7 +2,7 @@
 
 A reusable peripheral driver library for the STM32F407, written from scratch at register level using only the reference manual and datasheet.
 
-No HAL (Hardware Abstraction Layer) or CMSIS (Cortex Microcontroller Software Interface Standard) peripheral drivers are used. Every register access is written and verified against [RM0090](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#documentation).
+No HAL (Hardware Abstraction Layer) or CMSIS (Cortex Microcontroller Software Interface Standard) peripheral drivers are used. Every register access is written by hand and verified against [RM0090](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#documentation).
 
 This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* by Erhan Konak. It is intentionally kept outside the `course-N` numbering used for the [Fastbit sequence](../) because it is a separate learning resource with a different structure.
 
@@ -10,12 +10,12 @@ This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, 
 
 | Component | Status | Scope |
 |---|---|---|
-| [`stm32f407xx.h`](driver-library/Inc/stm32f407xx.h) | Working | Base addresses, register structs (GPIO, RCC, SYSCFG, EXTI, SPI), peripheral pointers, bit definitions |
-| [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports, SYSCFG and SPI1–SPI4 |
+| [`stm32f407xx.h`](driver-library/Inc/stm32f407xx.h) | Working | Base addresses, register structs (GPIO, RCC, SYSCFG, EXTI, SPI, USART), peripheral pointers, bit definitions |
+| [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports, SYSCFG, SPI1–SPI4, USART2/3 and UART4/5 |
 | [`GPIO`](driver-library/Inc/GPIO.h) | Working | Init with alternate function (AFR) support, read, write, toggle, lock |
 | [`EXTI`](driver-library/Inc/EXTI.h) | Working | SYSCFG line routing, mask and edge configuration, NVIC interrupt enable |
-| [`SPI`](driver-library/Inc/SPI.h) | In progress | Init, peripheral enable, polled and interrupt-driven transmit and receive, flag status |interrupts (`RXNEIE`), error interrupts (`ERRIE`) and DMA pending |
-| `USART` | Planned | — |
+| [`SPI`](driver-library/Inc/SPI.h) | Working | Init, peripheral enable, polled and interrupt-driven transmit and receive, flag status |
+| [`USART`](driver-library/Inc/USART.h) | In progress | Configuration definitions and handle struct; init and transfer pending |
 | `I2C` | Planned | — |
 
 ## Hardware and Toolchain
@@ -38,12 +38,14 @@ driver-development/
 │   │   ├── RCC.h            # clock control interface
 │   │   ├── GPIO.h           # GPIO interface
 │   │   ├── EXTI.h           # external interrupt interface
-│   │   └── SPI.h            # SPI interface
+│   │   ├── SPI.h            # SPI interface
+│   │   └── USART.h          # USART interface
 │   └── Src/
 │       ├── RCC.c
 │       ├── GPIO.c
 │       ├── EXTI.c
-│       └── SPI.c
+│       ├── SPI.c
+│       └── USART.c
 │
 ├── driver-projects/         # applications built on top of the library
 │   ├── 01-four-led-on/
@@ -56,7 +58,7 @@ driver-development/
 └── README.md
 ```
 
-`driver-library/` is the reusable layer. `driver-projects/` holds small applications that consume it, so that no application file ever touches a register directly.
+`driver-library/` is the reusable layer. `driver-projects/` holds small applications that consume it, so that application files work through the driver interface rather than the register map. Interrupt handlers are the one place this is not yet true: clearing `EXTI->PR` is still done in application code, because the driver has no function for it.
 
 The repository-level [`projects/`](../projects) directory is separate — it holds standalone embedded projects not built around this library.
 
@@ -192,7 +194,7 @@ Decisions worth recording:
 
 - **Reading a byte from a 32-bit data register needs a cast.** `SPI->DR` is declared `uint32_t` in the register struct, but in 8-bit frame format only the low byte carries data. Taking the register's address, casting it to `__IO uint8_t*` and dereferencing reads exactly one byte — without the cast the compiler would perform a 32-bit access and the surrounding bits would come along.
 
-- **Transmit has two implementations, kept side by side on purpose.** `SPI_TransmitData` spins on `TXE` and `BSY` in `while` loops, so the processor does nothing else while a transfer is in flight. `SPI_TransmitData_IT` stores the buffer in the handle, enables `TXEIE` and returns; each byte is then written from `SPI1_IRQHandler`. Keeping both makes the cost of blocking measurable rather than theoretical — projects 05 and 06 run the same task through each. Receive is still polled only.
+- **Transmit has two implementations, kept side by side on purpose.** `SPI_TransmitData` spins on `TXE` and `BSY` in `while` loops, so the processor does nothing else while a transfer is in flight. `SPI_TransmitData_IT` stores the buffer in the handle, enables `TXEIE` and returns; each byte is then written from `SPI1_IRQHandler`. Keeping both makes the cost of blocking measurable rather than theoretical — projects 05 and 06 run the same task through each. Receive follows the same pair, dispatched through `RxISRFunction`.
 
 - **An asynchronous transfer moves the ownership of the buffer.** The polled call is finished with the caller's data before it returns. The interrupt-driven call only records the address; the bytes are read later, from a different execution context. A buffer with automatic storage duration is therefore a lifetime bug rather than a style choice — the stack frame it lives in is gone by the time the SPI interrupt reads it, and nothing about the register configuration hints at this.
 
@@ -215,7 +217,7 @@ Decisions worth recording:
 - [RM0090 Reference Manual](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#documentation) — register-level source of truth
 - [STM32F407VG datasheet](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#documentation) — pinout, electrical characteristics
 - [STM32F4DISCOVERY user manual and schematic](https://www.st.com/en/evaluation-tools/stm32f4discovery.html#documentation) — board wiring, LED and button pin assignments
-- [Cortex-M4 Technical Reference Manual](https://developer.arm.com/documentation/100166/latest/) — core architecture
+- [Cortex-M4 Technical Reference Manual (DDI0439)](https://developer.arm.com/documentation/ddi0439/latest) — core architecture
 - Further reading is collected in [`RESOURCES.md`](../RESOURCES.md)
 
 ---
@@ -228,9 +230,9 @@ Erhan Konak'ın *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* Ud
 
 Kütüphane katmanlı bir yapıda: `stm32f407xx.h` donanımı tarif eder, `GPIO.h` / `RCC.h` / `EXTI.h` kullanıcıya sunulan arayüzü tanımlar, `.c` dosyaları bu arayüzü register seviyesinde gerçekler, uygulama kodu ise register bilmez.
 
-Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsü init, read, write, toggle, lock ve alternate function (AFR) desteğiyle tamamlandı. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme çalışıyor. SPI (Serial Peripheral Interface) tarafında init, çevre birimi etkinleştirme, bayrak okuma, yoklama (polling) tabanlı gönderme ve alma ile **kesme tabanlı gönderme** (`TXEIE`) tamamlandı; alma kesmeleri (`RXNEIE`), hata kesmeleri (`ERRIE`) ve DMA bekliyor. USART ve I2C kurs ilerledikçe gelecek.
+Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsü init, read, write, toggle, lock ve alternate function (AFR) desteğiyle tamamlandı. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme çalışıyor. SPI (Serial Peripheral Interface) tarafında init, çevre birimi etkinleştirme, bayrak okuma, yoklama (polling) ve kesme tabanlı (`TXEIE`, `RXNEIE`) gönderme ve alma tamamlandı; hata kesmeleri (`ERRIE`) ve DMA bekliyor. USART tarafında yapılandırma tanımları ve handle yapısı hazır; init ve veri aktarımı bekliyor. I2C kurs ilerledikçe gelecek.
 
-Gönderme tarafında iki uygulama bilerek yan yana duruyor. Yoklama sürümü bayrağı `while` döngüsüyle bekler ve işlemciyi tutar; kesme sürümü tamponun adresini handle'a yazıp döner, baytları `SPI1_IRQHandler` yazar. Projeler 05 ve 06 aynı işi iki yoldan yapıyor, böylece bloklamanın maliyeti teorik değil ölçülebilir hale geliyor.
+Hem gönderme hem alma tarafında iki uygulama bilerek yan yana duruyor. Yoklama sürümü bayrağı `while` döngüsüyle bekler ve işlemciyi tutar; kesme sürümü tamponun adresini handle'a yazıp döner, baytları `SPI1_IRQHandler` yazar. Projeler 05 ve 06 aynı işi iki yoldan yapıyor, böylece bloklamanın maliyeti teorik değil ölçülebilir hale geliyor.
 
 Asenkron sürüme geçmek tamponun sahipliğini de değiştiriyor: fonksiyon veriyi göndermeden döndüğü için tamponun çağrıdan uzun yaşaması gerekiyor. Bu, register yapılandırmasında hiç görünmeyen bir fark.
 

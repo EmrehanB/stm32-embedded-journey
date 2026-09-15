@@ -106,6 +106,35 @@
 
 
 
+#define RCC_USART2_CLK_ENABLE()      do{        uint32_t tempVal=0;                                     \
+                                                SET_BIT(RCC->APB1ENR, RCC_APB1ENR_USART2);              \
+                                                tempVal= READ_BIT(RCC->APB1ENR, RCC_APB1ENR_USART2);    \
+                                                UNUSED(tempVal);                                        \
+                                     } while (0)
+
+#define RCC_USART3_CLK_ENABLE()      do{        uint32_t tempVal=0;                                     \
+                                                SET_BIT(RCC->APB1ENR, RCC_APB1ENR_USART3);              \
+                                                tempVal= READ_BIT(RCC->APB1ENR, RCC_APB1ENR_USART3);    \
+                                                UNUSED(tempVal);                                        \
+                                     } while (0)
+
+#define RCC_UART4_CLK_ENABLE()       do{        uint32_t tempVal=0;                                     \
+                                                SET_BIT(RCC->APB1ENR, RCC_APB1ENR_UART4);               \
+                                                tempVal= READ_BIT(RCC->APB1ENR, RCC_APB1ENR_UART4);     \
+                                                UNUSED(tempVal);                                        \
+                                     } while (0)
+
+#define RCC_UART5_CLK_ENABLE()       do{        uint32_t tempVal=0;                                     \
+                                                SET_BIT(RCC->APB1ENR, RCC_APB1ENR_UART5);               \
+                                                tempVal= READ_BIT(RCC->APB1ENR, RCC_APB1ENR_UART5);     \
+                                                UNUSED(tempVal);                                        \
+                                     } while (0)
+
+
+
+
+
+
 
 
 

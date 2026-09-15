@@ -4,9 +4,9 @@ Embedded systems programming on STM32, from bare-metal upwards.
 
 **Board:** [STM32F407G-DISC1 (Discovery)](https://www.st.com/en/evaluation-tools/stm32f4discovery.html) · **MCU:** [STM32F407VGT6](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html) (ARM Cortex-M4) · **Toolchain:** [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html)
 
-Everything here is written at register level against [RM0090](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#documentation) — no HAL (Hardware Abstraction Layer), no CMSIS (Cortex Microcontroller Software Interface Standard) peripheral drivers. The aim is to understand what vendor libraries do underneath rather than to call them.
+Where hardware is involved, everything is written at register level against [RM0090](https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#documentation) — no HAL (Hardware Abstraction Layer), no CMSIS (Cortex Microcontroller Software Interface Standard) peripheral drivers. The aim is to understand what vendor libraries do underneath rather than to call them.
 
-The implementations are written by hand — I don't have them generated for me. That is not a stance against AI tools; the purpose of this repository is learning, and code I did not reason through would teach me nothing. I use AI the way I use a datasheet or a forum thread: to understand a mechanism I'm stuck on, not to write it for me. Every line here is something I can explain and defend.
+I write the implementations myself, and I use AI the way I use a datasheet or a forum thread: to understand a mechanism I'm stuck on. This is not a stance against generated code — it is what the repository is for. A driver I did not reason through would leave me with a working peripheral and no understanding of it. Every line here is something I can explain and defend.
 
 Each exercise lives in its own folder with a dedicated README explaining the approach. The repo grows with new sections as the courses progress.
 
@@ -47,7 +47,7 @@ Register-level bare-metal C, no HAL. GPIO, `volatile`, structs/unions, bit-field
 
 Cortex-M3/M4 processor internals: operational modes, register set, MSP/PSP banked stack, exception & interrupt handling via NVIC (Nested Vectored Interrupt Controller), memory map, bus interfaces, bit-banding, bootloader/IAP.
 
-Reference: [Cortex-M4 Technical Reference Manual](https://developer.arm.com/documentation/100166/latest/).
+Reference: [Cortex-M4 Devices Generic User Guide (DUI0553)](https://developer.arm.com/documentation/dui0553/latest) — the software-developer view of the core, which is what this section covers.
 
 | # | Exercise | Topic | Details |
 |---|----------|-------|---------|
@@ -62,7 +62,7 @@ Currently paused, resumes after the driver development track.
 
 A reusable STM32F407 peripheral driver library built from scratch, following the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* by Erhan Konak. Kept outside the `course-N` numbering since it's a separate source, not part of the Fastbit sequence above.
 
-Split into two layers: `driver-library/` holds the drivers themselves, `driver-projects/` holds applications that consume them — so application code never touches a register directly.
+Split into two layers: `driver-library/` holds the drivers themselves, `driver-projects/` holds applications that consume them — so application code works through the driver interface rather than the register map.
 
 | Component | Status |
 |---|---|
@@ -70,8 +70,9 @@ Split into two layers: `driver-library/` holds the drivers themselves, `driver-p
 | `RCC` — peripheral clock enable/disable | Working |
 | `GPIO` — init, read, write, toggle, lock | Working |
 | `EXTI` — line routing, edge config, NVIC enable | Working |
-| `SPI` — init, enable, polled + interrupt-driven transmit and receive | In progress |
-| `USART` · `I2C` | Planned |
+| `SPI` — init, enable, polled + interrupt-driven transmit and receive | Working |
+| `USART` — configuration definitions, handle struct | In progress |
+| `I2C` | Planned |
 Details: [driver-development](./driver-development)
 
 ---
@@ -89,9 +90,9 @@ Standalone projects combining skills from completed exercises — not tied to a 
 
 ## Türkçe
 
-STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Tüm kod register seviyesinde, RM0090 referans kılavuzuna karşı yazılıyor; HAL ve CMSIS çevre birimi sürücüleri kullanılmıyor.
+STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Donanımın işin içine girdiği her yerde kod register seviyesinde, RM0090 referans kılavuzuna karşı yazılıyor; HAL ve CMSIS çevre birimi sürücüleri kullanılmıyor.
 
-Uygulamaları elle yazıyorum, Ai'a ürettirmiyorum. Bu, yapay zekâ araçlarına karşı bir duruş değil; bu deponun amacı öğrenmek ve üzerinde düşünmediğim bir kod bana hiçbir şey öğretmez. Yapay zekâyı bir datasheet veya forum gönderisi gibi kullanıyorum: takıldığım bir mekanizmayı anlamak için, benim yerime yazsın diye değil. Buradaki her satırı açıklayabilirim.
+Uygulamaları kendim yazıyorum; yapay zekâyı bir datasheet ya da forum gönderisi gibi kullanıyorum — takıldığım bir mekanizmayı anlamak için. Bu, üretilen koda karşı bir duruş değil; deponun amacı zaten bu. Üzerinde düşünmediğim bir sürücü bana çalışan bir çevre birimi bırakır, anlayış bırakmaz. Buradaki her satırı açıklayabilirim.
 
 Repo dört bölümden oluşuyor: **Course 1** bare-metal embedded C (tamamlandı, 11 alıştırma), **Course 2** ARM Cortex-M işlemci mimarisi (bellek haritası bölümünde duraklatıldı), **Driver Development** kendi sürücü kütüphanem — GPIO/EXTI/SPI/USART/I2C (aktif olarak geliştiriliyor), **Projects** ise kurs alıştırmalarından bağımsız, kazanılan becerileri birleştiren kendi projelerim.
 

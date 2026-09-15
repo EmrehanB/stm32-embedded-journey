@@ -269,6 +269,22 @@ typedef struct{
 
 
 
+typedef struct{
+
+	__IO uint32_t SR	;
+	__IO uint32_t DR	;
+	__IO uint32_t BRR	;
+	__IO uint32_t CR1 	;
+	__IO uint32_t CR2	;
+	__IO uint32_t CR3	;
+	__IO uint32_t GTPR	;
+
+}USART_TypeDef_t;
+
+
+
+
+
 
 
 
@@ -290,6 +306,12 @@ typedef struct{
 #define SPI2    ( (SPI_TypeDef_t *) SPI2_BASE_ADDR)
 #define SPI3    ( (SPI_TypeDef_t *) SPI3_BASE_ADDR)
 #define SPI4    ( (SPI_TypeDef_t *) SPI4_BASE_ADDR)
+
+#define USART2  ( (USART_TypeDef_t *) USART2_BASE_ADDR)
+#define USART3  ( (USART_TypeDef_t *) USART3_BASE_ADDR)
+
+#define UART4  ( (USART_TypeDef_t *) UART4_BASE_ADDR)
+#define UART5  ( (USART_TypeDef_t *) UART5_BASE_ADDR)
 
 
 //Bit tanımlamaları (bit definitions)
@@ -342,6 +364,26 @@ typedef struct{
 
 
 
+
+
+#define RCC_APB1ENR_USART2_POSITION     	(17U)                                // RCC APB1ENRegister USART2EN bit konumu
+#define RCC_APB1ENR_USART2_MASK         (0x1 << RCC_APB1ENR_USART2_POSITION)	 // RCC APB1ENRegister USART2EN bit mask (0x01<<17)
+#define RCC_APB1ENR_USART2              RCC_APB1ENR_USART2_MASK              	 // RCC APB1ENRegister USART2EN macro
+
+#define RCC_APB1ENR_USART3_POSITION     (18U)                               	 // RCC APB1ENRegister USART3EN bit konumu
+#define RCC_APB1ENR_USART3_MASK         (0x1 << RCC_APB1ENR_USART3_POSITION) 	 // RCC APB1ENRegister USART3EN bit mask (0x01<<18)
+#define RCC_APB1ENR_USART3              RCC_APB1ENR_USART3_MASK              	 // RCC APB1ENRegister USART3EN macro
+
+#define RCC_APB1ENR_UART4_POSITION      (19U)                               	 // RCC APB1ENRegister UART4EN bit konumu
+#define RCC_APB1ENR_UART4_MASK          (0x1 << RCC_APB1ENR_UART4_POSITION) 	 // RCC APB1ENRegister UART4EN bit mask (0x01<<19)
+#define RCC_APB1ENR_UART4               RCC_APB1ENR_UART4_MASK              	 // RCC APB1ENRegister UART4EN macro
+
+#define RCC_APB1ENR_UART5_POSITION      (20U)                               	 // RCC APB1ENRegister UART5EN bit konumu
+#define RCC_APB1ENR_UART5_MASK          (0x1 << RCC_APB1ENR_UART5_POSITION)  	 // RCC APB1ENRegister UART5EN bit mask (0x01<<20)
+#define RCC_APB1ENR_UART5               RCC_APB1ENR_UART5_MASK              	 // RCC APB1ENRegister UART5EN macro
+
+
+
 //Flag tanımlamaları
 
 #define SPI_TxE_FLAG				  ( 0x1U << 1 )
@@ -356,5 +398,6 @@ typedef struct{
 #include "GPIO.h"
 #include "EXTI.h"
 #include "SPI.h"
+#include "USART.h"
 
 #endif /* INC_STM32F407XX_H_ */
