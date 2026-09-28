@@ -132,6 +132,13 @@
 
 
 
+uint32_t RCC_GetSystemClock(void);
+uint32_t RCC_GetHClock(void);
+uint32_t RCC_GetPClock1(void);
+uint32_t RCC_GetPClock2(void);
+
+
+
 
 
 

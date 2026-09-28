@@ -49,6 +49,12 @@
 
 
 
+#define __USART_BRR_OVERSAMPLING_8(__PCLOCK__,__BAUDRATE__)   (1)
+#define __USART_BRR_OVERSAMPLING_16(__PCLOCK__,__BAUDRATE__)  (1)
+
+#define __USART_DIV_VALUE_16(__PCLOCK__,__BAUDRATE__)  ( 25 * (__PCLOCK__) ) / ( 4 * (__BAUDRATE__) )
+#define __USART_DIV_VALUE_8(__PCLOCK__,__BAUDRATE__)   ( 25 * (__PCLOCK__) ) / ( 2 * (__BAUDRATE__) )
+
 
 
 
@@ -66,6 +72,7 @@ typedef struct{
 }USART_InitTypeDef_t;
 
 
+
 typedef struct{
 
  USART_TypeDef_t     *Instance;
@@ -75,9 +82,20 @@ typedef struct{
 
 
 
+typedef enum{  //Flaglerim SR registerda
+
+	USART_FLAG_RESET = 0x0U,
+	USART_FLAG_SET   = !USART_FLAG_RESET
+
+}USART_FlagStatus_t;
 
 
 
+
+void USART_Init(USART_HandleTypeDef_t *USART_Handle);
+void USART_TransmitData(USART_HandleTypeDef_t *USART_Handle , uint8_t *pDataAddr , uint16_t dataSize  );
+void USART_PeriphCMD (USART_HandleTypeDef_t *USART_Handle , FunctionalState_t stateOfUSART);
+USART_FlagStatus_t USART_GetFlagStatus (USART_HandleTypeDef_t *USART_Handle , uint16_t flagName ) ;
 
 
 

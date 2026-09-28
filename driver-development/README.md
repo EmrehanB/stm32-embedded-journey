@@ -11,11 +11,11 @@ This track follows the Udemy course *Mikrodenetleyici Driver Geliştirme (GPIO, 
 | Component | Status | Scope |
 |---|---|---|
 | [`stm32f407xx.h`](driver-library/Inc/stm32f407xx.h) | Working | Base addresses, register structs (GPIO, RCC, SYSCFG, EXTI, SPI, USART), peripheral pointers, bit definitions |
-| [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports, SYSCFG, SPI1–SPI4, USART2/3 and UART4/5 |
+| [`RCC`](driver-library/Inc/RCC.h) | Working | Peripheral clock enable / disable for GPIO ports, SYSCFG, SPI1–SPI4, USART2/3 and UART4/5; SYSCLK, HCLK, PCLK1 and PCLK2 frequencies read back from `RCC_CFGR` |
 | [`GPIO`](driver-library/Inc/GPIO.h) | Working | Init with alternate function (AFR) support, read, write, toggle, lock |
 | [`EXTI`](driver-library/Inc/EXTI.h) | Working | SYSCFG line routing, mask and edge configuration, NVIC interrupt enable |
 | [`SPI`](driver-library/Inc/SPI.h) | Working | Init, peripheral enable, polled and interrupt-driven transmit and receive, flag status |
-| [`USART`](driver-library/Inc/USART.h) | In progress | Configuration definitions and handle struct; init and transfer pending |
+| [`USART`](driver-library/Inc/USART.h) | In progress | Init (word length, parity, stop bits, oversampling, hardware flow control, baud rate), peripheral enable, polled transmit, flag status; receive and interrupt-driven transfer pending |
 | `I2C` | Planned | — |
 
 ## Hardware and Toolchain
@@ -162,9 +162,9 @@ The library is organised in layers, and the layer boundary is the point of the e
 
 **1. Hardware description** — `stm32f407xx.h` answers *how is the silicon laid out?* Base addresses, register maps as structs, bit positions and masks. Nothing here knows what a driver is.
 
-**2. Interface** — `RCC.h`, `GPIO.h`, `EXTI.h`, `SPI.h` answer *what does a driver user get to call?* Symbolic pin masks, state enums, function prototypes.
+**2. Interface** — `RCC.h`, `GPIO.h`, `EXTI.h`, `SPI.h`, `USART.h` answer *what does a driver user get to call?* Symbolic pin masks, state enums, function prototypes.
 
-**3. Implementation** — `RCC.c`, `GPIO.c`, `EXTI.c`, `SPI.c` answer *how is that interface realised in registers?*
+**3. Implementation** — `RCC.c`, `GPIO.c`, `EXTI.c`, `SPI.c`, `USART.c` answer *how is that interface realised in registers?*
 
 **4. Application** — code under `driver-projects/`. It should not know GPIOD's base address, BSRR's offset, or which half of BSRR resets a pin.
 
@@ -210,6 +210,12 @@ Decisions worth recording:
 
 - **A peripheral's bus determines which clock-enable register it uses.** GPIO sits on AHB1 (`AHB1ENR`), SYSCFG on APB2 (`APB2ENR`). SPI is split: SPI1 and SPI4 are on APB2 and run at up to 84 MHz, while SPI2 and SPI3 are on APB1 at 42 MHz. The first question when adding any peripheral is which bus it hangs off.
 
+- **The baud rate is computed from the clock the bus actually runs at.** `RCC_GetPClock1` and `RCC_GetPClock2` read the clock source (`SWS`) and the AHB/APB prescaler fields from `RCC_CFGR` instead of assuming 16 MHz, so `USART_Init` stays correct if the clock tree changes. USART1 and USART6 take their clock from APB2, the others from APB1. The prescaler fields are encoded rather than literal, so lookup tables turn them into shift amounts; the AHB table jumps from 4 to 6 because `HPRE` has no ÷32 setting. The PLL is not decoded yet — with the PLL selected, the function falls back to 16 MHz.
+
+- **`USARTDIV` is computed in fixed point.** Multiplying by 100 before dividing keeps two decimal places in integer arithmetic. The integer part becomes the `BRR` mantissa; the remainder is scaled to 4 bits (oversampling by 16) or 3 bits (oversampling by 8) for the fraction. At 16 MHz and 115200 baud this gives `BRR = 0x8B`, an error of about 0.08 %.
+
+- **Transmit waits for `TC`, not just `TXE`.** The same double buffering as SPI: `TXE` means the data register has emptied into the shift register, `TC` means the last frame, stop bit included, has left the line. Returning on `TXE` alone would let a caller disable the peripheral in the middle of a frame.
+
 - **`EXTI_Mode` and `TriggerMode` hold register offsets, not enum-like codes.** `EXTI_Mode_Interrupt` is `0x00` (IMR) and `EXTI_Mode_Event` is `0x04` (EMR); the trigger values are the offsets of RTSR, FTSR and a sentinel for "both". The driver adds the offset to the EXTI base address and writes through the resulting pointer. This mirrors ST's older SPL style; the alternative — plain `if`/`else` on `EXTI->IMR` and `EXTI->EMR` — avoids offset arithmetic entirely but was not used here in order to follow the course's structure.
 
 ## References
@@ -230,7 +236,7 @@ Erhan Konak'ın *Mikrodenetleyici Driver Geliştirme (GPIO, SPI, USART, I2C)* Ud
 
 Kütüphane katmanlı bir yapıda: `stm32f407xx.h` donanımı tarif eder, `GPIO.h` / `RCC.h` / `EXTI.h` kullanıcıya sunulan arayüzü tanımlar, `.c` dosyaları bu arayüzü register seviyesinde gerçekler, uygulama kodu ise register bilmez.
 
-Mevcut durum: RCC (Reset and Clock Control) clock enable/disable çalışıyor. GPIO sürücüsü init, read, write, toggle, lock ve alternate function (AFR) desteğiyle tamamlandı. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme çalışıyor. SPI (Serial Peripheral Interface) tarafında init, çevre birimi etkinleştirme, bayrak okuma, yoklama (polling) ve kesme tabanlı (`TXEIE`, `RXNEIE`) gönderme ve alma tamamlandı; hata kesmeleri (`ERRIE`) ve DMA bekliyor. USART tarafında yapılandırma tanımları ve handle yapısı hazır; init ve veri aktarımı bekliyor. I2C kurs ilerledikçe gelecek.
+Mevcut durum: RCC (Reset and Clock Control) tarafında clock enable/disable ile `RCC_CFGR`'den SYSCLK, HCLK, PCLK1 ve PCLK2 frekanslarını okuyan fonksiyonlar çalışıyor. GPIO sürücüsü init, read, write, toggle, lock ve alternate function (AFR) desteğiyle tamamlandı. EXTI (External Interrupt/Event Controller) tarafında SYSCFG hat yönlendirmesi, maske ve kenar yapılandırması ile NVIC (Nested Vectored Interrupt Controller) kesme etkinleştirme çalışıyor. SPI (Serial Peripheral Interface) tarafında init, çevre birimi etkinleştirme, bayrak okuma, yoklama (polling) ve kesme tabanlı (`TXEIE`, `RXNEIE`) gönderme ve alma tamamlandı; hata kesmeleri (`ERRIE`) ve DMA bekliyor. USART tarafında init (kelime uzunluğu, parity, stop bit, oversampling, donanım akış kontrolü, baud rate hesabı), çevre birimi etkinleştirme ve yoklama tabanlı gönderme yazıldı; alma ve kesme tabanlı aktarım bekliyor. I2C kurs ilerledikçe gelecek.
 
 Hem gönderme hem alma tarafında iki uygulama bilerek yan yana duruyor. Yoklama sürümü bayrağı `while` döngüsüyle bekler ve işlemciyi tutar; kesme sürümü tamponun adresini handle'a yazıp döner, baytları `SPI1_IRQHandler` yazar. Projeler 05 ve 06 aynı işi iki yoldan yapıyor, böylece bloklamanın maliyeti teorik değil ölçülebilir hale geliyor.
 

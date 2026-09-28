@@ -313,6 +313,9 @@ typedef struct{
 #define UART4  ( (USART_TypeDef_t *) UART4_BASE_ADDR)
 #define UART5  ( (USART_TypeDef_t *) UART5_BASE_ADDR)
 
+#define USART1 ( (USART_TypeDef_t *) USART1_BASE_ADDR)
+#define USART6 ( (USART_TypeDef_t *) USART6_BASE_ADDR)
+
 
 //Bit tanımlamaları (bit definitions)
 
@@ -386,9 +389,12 @@ typedef struct{
 
 //Flag tanımlamaları
 
-#define SPI_TxE_FLAG				  ( 0x1U << 1 )
-#define SPI_BSY_FLAG                  ( 0x1U << 7 )
-#define SPI_RxNE_FLAG                 ( 0x1U << 0 )
+#define SPI_TxE_FLAG				  ( 0x1U << 1U )
+#define SPI_BSY_FLAG                  ( 0x1U << 7U )
+#define SPI_RxNE_FLAG                 ( 0x1U << 0U )
+
+#define USART_TXE_FLAG                ( 0x1U << 7U )
+#define USART_TC_FLAG                 ( 0x1U << 6U )
 
 
 
