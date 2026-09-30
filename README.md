@@ -92,7 +92,7 @@ Standalone projects combining skills from completed exercises — not tied to a 
 
 STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Donanımın işin içine girdiği her yerde kod register seviyesinde, RM0090 referans kılavuzuna karşı yazılıyor; HAL ve CMSIS çevre birimi sürücüleri kullanılmıyor.
 
-Uygulamaları kendim yazıyorum; yapay zekâyı bir datasheet ya da forum gönderisi gibi kullanıyorum — takıldığım bir mekanizmayı anlamak için. Bu, üretilen koda karşı bir duruş değil; deponun amacı zaten bu. Üzerinde düşünmediğim bir sürücü bana çalışan bir çevre birimi bırakır, anlayış bırakmaz. Buradaki her satırı açıklayabilirim.
+Uygulamaları kendim yazıyorum; yapay zekâyı bir datasheet ya da forum gönderisi gibi kullanıyorum — takıldığım bir mekanizmayı anlamak için. Bu, üretilen koda karşı bir duruş değil; deponun amacı zaten bu. Üzerinde düşünmediğim bir sürücünün bana çok şey katmayacağını düşünüyorum. Buradaki her satırı açıklayabilirim.
 
 Repo dört bölümden oluşuyor: **Course 1** bare-metal embedded C (tamamlandı, 11 alıştırma), **Course 2** ARM Cortex-M işlemci mimarisi (bellek haritası bölümünde duraklatıldı), **Driver Development** kendi sürücü kütüphanem — GPIO/EXTI/SPI/USART/I2C (aktif olarak geliştiriliyor), **Projects** ise kurs alıştırmalarından bağımsız, kazanılan becerileri birleştiren kendi projelerim.
 
