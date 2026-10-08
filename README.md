@@ -71,8 +71,7 @@ Split into two layers: `driver-library/` holds the drivers themselves, `driver-p
 | `GPIO` — init, read, write, toggle, lock | Working |
 | `EXTI` — line routing, edge config, NVIC enable | Working |
 | `SPI` — init, enable, polled + interrupt-driven transmit and receive | Working |
-| `USART` — init, baud rate calculation, polled transmit | In progress |
-| `I2C` | Planned |
+| `USART` — init, baud rate calculation, polled transmit | Working  |
 Details: [driver-development](./driver-development)
 
 ---
