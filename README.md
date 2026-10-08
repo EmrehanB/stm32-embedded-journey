@@ -18,7 +18,7 @@ See [RESOURCES.md](./RESOURCES.md) for courses, reference documents, and article
 |---|---|---|
 | [Course 1](#course-1--bare-metal-embedded-c) | Bare-metal embedded C | Completed — 11 exercises |
 | [Course 2](#course-2--arm-cortex-m-architecture) | Cortex-M processor architecture | Paused at memory map & bus interfaces |
-| [Driver Development](#driver-development) | Reusable peripheral driver library | Active |
+| [Driver Development](#driver-development) | Completed |
 | [Projects](#projects) | Standalone applications | Ongoing |
 
 ---
