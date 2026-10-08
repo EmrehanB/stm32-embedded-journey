@@ -18,7 +18,8 @@ See [RESOURCES.md](./RESOURCES.md) for courses, reference documents, and article
 |---|---|---|
 | [Course 1](#course-1--bare-metal-embedded-c) | Bare-metal embedded C | Completed — 11 exercises |
 | [Course 2](#course-2--arm-cortex-m-architecture) | Cortex-M processor architecture | Paused at memory map & bus interfaces |
-| [Driver Development](#driver-development) | Reusable peripheral driver library | Active |
+| [Driver Development](#driver-development) | Reusable peripheral driver library | Completed |
+| [DSP](#dsp) | Digital signal processing on Cortex-M4 | Active |
 | [Projects](#projects) | Standalone applications | Ongoing |
 
 ---
@@ -71,9 +72,17 @@ Split into two layers: `driver-library/` holds the drivers themselves, `driver-p
 | `GPIO` — init, read, write, toggle, lock | Working |
 | `EXTI` — line routing, edge config, NVIC enable | Working |
 | `SPI` — init, enable, polled + interrupt-driven transmit and receive | Working |
-| `USART` — init, baud rate calculation, polled transmit | In progress |
-| `I2C` | Planned |
+| `USART` — init, baud rate calculation, polled transmit | Working  |
+
 Details: [driver-development](./driver-development)
+
+---
+
+## DSP
+
+Digital signal processing algorithms written in C and run on the STM32F407: signal statistics and noise, convolution, FIR and IIR filters and the discrete Fourier transform, then the same algorithms through Arm's CMSIS-DSP library for comparison, and finally processing of a live signal sampled by the on-chip ADC. Based on the Udemy course *DSP From Ground Up™ on ARM Processors* by BHM Engineering Academy. The course targets an STM32 Nucleo board; the exercises here are adapted to the F407 Discovery.
+
+Exercises are added as the course progresses. Details: [dsp](./dsp)
 
 ---
 
@@ -92,8 +101,8 @@ Standalone projects combining skills from completed exercises — not tied to a 
 
 STM32 üzerinde bare-metal'den ileri seviyeye uzanan embedded sistem programlama yolculuğu. Donanımın işin içine girdiği her yerde kod register seviyesinde, RM0090 referans kılavuzuna karşı yazılıyor; HAL ve CMSIS çevre birimi sürücüleri kullanılmıyor.
 
-Uygulamaları kendim yazıyorum; yapay zekâyı bir datasheet ya da forum gönderisi gibi kullanıyorum — takıldığım bir mekanizmayı anlamak için. Bu, üretilen koda karşı bir duruş değil; deponun amacı zaten bu. Üzerinde düşünmediğim bir sürücü bana çalışan bir çevre birimi bırakır, anlayış bırakmaz. Buradaki her satırı açıklayabilirim.
+Uygulamaları kendim yazıyorum; yapay zekâyı bir datasheet ya da forum gönderisi gibi kullanıyorum — takıldığım bir mekanizmayı anlamak için. Bu, üretilen koda karşı bir duruş değil; deponun amacı zaten bu. Üzerinde düşünmediğim bir sürücünün bana çok şey katmayacağını düşünüyorum. Buradaki her satırı açıklayabilirim.
 
-Repo dört bölümden oluşuyor: **Course 1** bare-metal embedded C (tamamlandı, 11 alıştırma), **Course 2** ARM Cortex-M işlemci mimarisi (bellek haritası bölümünde duraklatıldı), **Driver Development** kendi sürücü kütüphanem — GPIO/EXTI/SPI/USART/I2C (aktif olarak geliştiriliyor), **Projects** ise kurs alıştırmalarından bağımsız, kazanılan becerileri birleştiren kendi projelerim.
+Repo beş bölümden oluşuyor: **Course 1** bare-metal embedded C (tamamlandı, 11 alıştırma), **Course 2** ARM Cortex-M işlemci mimarisi (bellek haritası bölümünde duraklatıldı), **Driver Development** kendi sürücü kütüphanem — GPIO/EXTI/SPI/USART (tamamlandı), **DSP** Cortex-M4 üzerinde C ile sayısal sinyal işleme (aktif), **Projects** ise kurs alıştırmalarından bağımsız, kazanılan becerileri birleştiren kendi projelerim.
 
 Her alıştırma klasörü kendi README dosyasıyla birlikte, yaklaşımı açıklayarak duruyor.
